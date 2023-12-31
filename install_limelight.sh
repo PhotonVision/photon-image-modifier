@@ -16,6 +16,9 @@ apt-get install -y libegl1 libopengl0 libopencv-core406 libgl1-mesa-dri libcamer
 # And keep rpi-bin installed
 apt-mark manual libraspberrypi-bin
 
+echo "Installing dhcpcd5"
+sudo apt install dhcpcd5
+
 # edit boot partition
 install -m 644 limelight/config.txt /boot/
 install -m 644 userconf.txt /boot/
