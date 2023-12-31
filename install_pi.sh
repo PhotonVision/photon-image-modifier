@@ -6,7 +6,7 @@ chmod +x install.sh
 rm install.sh
 
 echo "Installing additional things"
-sudo apt-get update
+apt-get update
 apt-get install -y pigpiod pigpio device-tree-compiler libraspberrypi-bin
 apt-get install -y network-manager
 apt-get install -y net-tools
@@ -14,7 +14,7 @@ apt-get install -y net-tools
 apt-get install -y libegl1 libopengl0 libopencv-core406 libgl1-mesa-dri libcamera0.1 libgbm1 libatomic1
 
 echo "Installing dhcpcd5"
-sudo apt install dhcpcd5
+apt-get install -y dhcpcd5
 
 # And keep rpi-bin installed
 apt-mark manual libraspberrypi-bin

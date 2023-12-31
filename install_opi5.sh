@@ -20,13 +20,13 @@ sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' install.sh
 ./install.sh
 rm install.sh
 
-sudo apt-get update
+apt-get update
 apt-get install -y network-manager net-tools libatomic1
 apt-mark manual netplan.io
 apt-mark manual libatomic1
 
 echo "Installing dhcpcd5"
-sudo apt install dhcpcd5
+apt-get install -y dhcpcd5
 
 cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
 network:
