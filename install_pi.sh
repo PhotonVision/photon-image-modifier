@@ -35,6 +35,9 @@ apt-get install -y network-manager
 apt-get install -y net-tools
 # libcamera-driver stuff + libatomic1 for wpilib
 apt-get install -y libegl1 libopengl0 libopencv-core406 libgl1-mesa-dri libcamera0.1 libgbm1 libatomic1
+# mrcal stuff
+apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
+
 
 rm -rf /var/lib/apt/lists/*
 apt-get clean

@@ -30,8 +30,8 @@ apt-get autoremove -y
 echo "Installing additional things"
 sudo apt-get update
 apt-get install -y network-manager net-tools libatomic1
-apt-mark manual netplan.io
-apt-mark manual libatomic1
+# mrcal stuff
+apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
 
 cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
 network:
