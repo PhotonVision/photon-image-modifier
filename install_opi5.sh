@@ -20,6 +20,14 @@ sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' install.sh
 ./install.sh
 rm install.sh
 
+
+# Remove extra packages 
+echo "Purging extra things"
+apt-get remove -y gdb gcc g++ linux-headers* libgcc*-dev
+apt-get autoremove -y
+
+
+echo "Installing additional things"
 sudo apt-get update
 apt-get install -y network-manager net-tools libatomic1
 apt-mark manual netplan.io
@@ -29,11 +37,6 @@ cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
 network:
   renderer: NetworkManager
 EOF
-
-# Remove extra packages 
-
-apt-get remove -y gdb gcc g++ linux-headers* libgcc*-dev
-apt-get autoremove -y
 
 rm -rf /var/lib/apt/lists/*
 apt-get clean
