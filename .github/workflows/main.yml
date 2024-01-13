@@ -42,7 +42,9 @@ jobs:
       with:
         image_additional_mb: 1500
         base_image: ${{ matrix.base_image }}
-        commands: ${{ matrix.script }}
+        commands: |
+          chmod +x ${{matrix.script}}
+          ${{ matrix.script }}
 
     - name: Compress built image
       run: |
