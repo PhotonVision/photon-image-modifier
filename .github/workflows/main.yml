@@ -21,6 +21,9 @@ jobs:
           - name: limelight3
             script: ./install_limelight3.sh
             base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2023-12-11/2023-12-11-raspios-bookworm-arm64-lite.img.xz
+          - name: limelight3g
+            script: ./install_limelight3g.sh
+            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2023-12-11/2023-12-11-raspios-bookworm-arm64-lite.img.xz
           - name: raspi
             script: ./install_pi.sh
             base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2023-12-11/2023-12-11-raspios-bookworm-arm64-lite.img.xz
