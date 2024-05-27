@@ -7,7 +7,7 @@ rm install.sh
 
 
 # and edit boot partition
-install -m 644 config.txt /boot/
+install -m 644 config.txt /boot/firmware/
 install -m 644 userconf.txt /boot/
 
 # Kill wifi and other networking things
