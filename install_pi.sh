@@ -7,6 +7,7 @@ rm install.sh
 
 
 # and edit boot partition
+mkdir /boot/firmware/
 install -m 644 config.txt /boot/firmware/
 install -m 644 userconf.txt /boot/
 
