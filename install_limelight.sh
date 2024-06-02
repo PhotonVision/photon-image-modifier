@@ -8,7 +8,6 @@ rm install.sh
 
 
 # edit boot partition
-mkdir /boot/firmware/
 install -m 644 limelight/config.txt /boot/firmware/
 install -m 644 userconf.txt /boot/
 
