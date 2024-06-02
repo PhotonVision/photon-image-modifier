@@ -8,7 +8,7 @@ rm install.sh
 
 
 # edit boot partition
-install -m 644 limelight/config.txt /boot/firmware/
+install -m 644 limelight/config.txt /boot/
 install -m 644 userconf.txt /boot/
 
 # install LL DTS
