@@ -34,6 +34,10 @@ apt-get install -y network-manager net-tools libatomic1
 # mrcal stuff
 apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
 
+
+systemctl disable ap6275p-bluetooth
+touch /etc/cloud/cloud-init.disabled
+
 cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
 network:
   renderer: NetworkManager
