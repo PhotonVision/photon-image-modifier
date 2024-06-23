@@ -33,6 +33,7 @@ sudo apt-get update
 apt-get install -y network-manager net-tools libatomic1
 # mrcal stuff
 apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
+apt-get install -y libc6 libstdc++6
 
 cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
 network:
