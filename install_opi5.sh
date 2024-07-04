@@ -11,13 +11,25 @@ else
 fi
 echo "pi:raspberry" | chpasswd
 
+if [[ $(lsb_release -rs | tail -n1) == "24.04" ]]; then
+    # add jammy to apt sources 
+    echo "Adding jammy to list of apt sources"
+    cat > /etc/apt/sources.list.d/jammy.sources <<EOF
+    Types: deb
+    URIs: http://ports.ubuntu.com/ubuntu-ports
+    Suites: jammy
+    Components: main universe restricted multiverse
+    Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+EOF
+fi
+
 apt-get update
 wget https://git.io/JJrEP -O install.sh
 chmod +x install.sh
 
 sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' install.sh
 
-./install.sh
+./install.sh -n -q
 rm install.sh
 
 
