@@ -11,7 +11,7 @@ else
 fi
 echo "pi:raspberry" | chpasswd
 
-if [[ $(lsb_release -rs | tail -n1) == "24.04" ]]; then
+if [[ $(cat /etc/lsb-release | grep -c "24.04") gt 0 ]]; then
     # add jammy to apt sources 
     echo "Adding jammy to list of apt sources"
     cat > /etc/apt/sources.list.d/jammy.sources <<EOF
