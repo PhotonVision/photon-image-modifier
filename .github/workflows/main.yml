@@ -58,7 +58,7 @@ jobs:
         mv ${{ steps.install_deps.outputs.image }} photonvision_${{ matrix.name }}.img
         sudo xz -T 0 -v photonvision_${{ matrix.name }}.img
 
-    - uses: actions/upload-artifact@master
+    - uses: actions/upload-artifact@v4
       with:
         name: photonvision_${{ matrix.name }}.img.xz
         path: photonvision_${{ matrix.name }}.img.xz
