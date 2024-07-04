@@ -14,6 +14,8 @@ echo "pi:raspberry" | chpasswd
 if [ $(cat /etc/lsb-release | grep -c "24.04") -gt 0 ]; then
     # add jammy to apt sources 
     echo "Adding jammy to list of apt sources"
+    add-apt-repository -S 'deb http://ports.ubuntu.com/ubuntu-ports jammy universe'
+
     cat > /etc/apt/sources.list.d/jammy.sources <<EOF
     Types: deb
     URIs: http://ports.ubuntu.com/ubuntu-ports
