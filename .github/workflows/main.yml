@@ -37,7 +37,7 @@ jobs:
     name: "Build for ${{ matrix.name }}"
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v4.3.3
       with:
         fetch-depth: 0
     - name: Fetch tags
@@ -58,7 +58,7 @@ jobs:
         mv ${{ steps.install_deps.outputs.image }} photonvision_${{ matrix.name }}.img
         sudo xz -T 0 -v photonvision_${{ matrix.name }}.img
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v4.3.3
       with:
         name: photonvision_${{ matrix.name }}.img.xz
         path: photonvision_${{ matrix.name }}.img.xz
@@ -70,10 +70,10 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       # Download literally every single artifact
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4.1.7
       - run: find
       # Push to dev release
-      - uses: pyTooling/Actions/releaser@r0
+      - uses: pyTooling/Actions/releaser@v1.0.5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: 'Dev'
@@ -82,7 +82,7 @@ jobs:
             **/*.xz
         if: github.event_name == 'push'
       # Upload all xz archives to GH tag if tagged
-      - uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v2.0.6
         with:
           files: |
             **/*.xz
