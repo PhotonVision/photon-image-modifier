@@ -43,14 +43,6 @@ if [ $(cat /etc/lsb-release | grep -c "24.04") -gt 0 ]; then
     # add jammy to apt sources 
     echo "Adding jammy to list of apt sources"
     add-apt-repository -y -S 'deb http://ports.ubuntu.com/ubuntu-ports jammy main universe'
-
-    cat > /etc/apt/sources.list.d/jammy.sources <<EOF
-    Types: deb
-    URIs: http://ports.ubuntu.com/ubuntu-ports
-    Suites: jammy
-    Components: main universe restricted multiverse
-    Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
-EOF
 fi
 
 apt-get update
