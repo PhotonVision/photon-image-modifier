@@ -47,10 +47,10 @@ apt-get install -y network-manager net-tools libatomic1
 apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
 apt-get install -y libc6 libstdc++6
 
-cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
-network:
-  renderer: NetworkManager
-EOF
+# cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
+# network:
+#   renderer: NetworkManager
+# EOF
 
 rm -rf /var/lib/apt/lists/*
 apt-get clean
