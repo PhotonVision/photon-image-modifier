@@ -36,7 +36,7 @@ rm install.sh
 # Remove extra packages 
 echo "Purging extra things"
 # apt-get remove -y gdb gcc g++ linux-headers* libgcc*-dev
-apt-get remove -y snapd
+# apt-get remove -y snapd
 apt-get autoremove -y
 
 
