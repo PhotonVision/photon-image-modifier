@@ -11,20 +11,6 @@ else
 fi
 echo "pi:raspberry" | chpasswd
 
-if [ $(cat /etc/lsb-release | grep -c "24.04") -gt 0 ]; then
-    # add jammy to apt sources 
-    echo "Adding jammy to list of apt sources"
-    add-apt-repository -S 'deb http://ports.ubuntu.com/ubuntu-ports jammy main universe'
-
-    cat > /etc/apt/sources.list.d/jammy.sources <<EOF
-    Types: deb
-    URIs: http://ports.ubuntu.com/ubuntu-ports
-    Suites: jammy
-    Components: main universe restricted multiverse
-    Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
-EOF
-fi
-
 apt-get update
 wget https://git.io/JJrEP -O install.sh
 chmod +x install.sh
@@ -45,14 +31,33 @@ apt-get autoremove -y
 echo "Installing additional things"
 sudo apt-get update
 apt-get install -y network-manager net-tools libatomic1
-# mrcal stuff
-apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
+
 apt-get install -y libc6 libstdc++6
 
 # cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
 # network:
 #   renderer: NetworkManager
 # EOF
+
+if [ $(cat /etc/lsb-release | grep -c "24.04") -gt 0 ]; then
+    # add jammy to apt sources 
+    echo "Adding jammy to list of apt sources"
+    add-apt-repository -y -S 'deb http://ports.ubuntu.com/ubuntu-ports jammy main universe'
+
+    cat > /etc/apt/sources.list.d/jammy.sources <<EOF
+    Types: deb
+    URIs: http://ports.ubuntu.com/ubuntu-ports
+    Suites: jammy
+    Components: main universe restricted multiverse
+    Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+EOF
+fi
+
+apt-get update
+
+# mrcal stuff
+apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
+
 
 rm -rf /var/lib/apt/lists/*
 apt-get clean
