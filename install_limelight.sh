@@ -28,16 +28,16 @@ systemctl enable pigpiod
 
 # Remove extra packages too
 echo "Purging extra things"
-apt-get purge -y python3 gdb gcc g++ linux-headers* libgcc*-dev libqt* wpasupplicant wireless-tools firmware-atheros firmware-brcm80211 firmware-libertas firmware-misc-nonfree firmware-realtek raspberrypi-net-mods device-tree-compiler
+apt-get purge -y gdb gcc g++ linux-headers* libgcc*-dev libqt* wpasupplicant wireless-tools firmware-atheros firmware-brcm80211 firmware-libertas firmware-misc-nonfree firmware-realtek raspberrypi-net-mods
 apt-get autoremove -y
 
 echo "Installing additional things"
 sudo apt-get update
-apt-get install -y pigpiod pigpio device-tree-compiler libraspberrypi-bin
+apt-get install -y pigpiod pigpio device-tree-compiler
 apt-get install -y network-manager
 apt-get install -y net-tools
 # libcamera-driver stuff
-apt-get install -y libegl1 libopengl0 libopencv-core406 libgl1-mesa-dri libcamera0.1 libgbm1 libatomic1
+apt-get install -y libegl1 libopengl0 libgl1-mesa-dri libcamera0.3 libgbm1 libatomic1
 # mrcal stuff
 apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
 
