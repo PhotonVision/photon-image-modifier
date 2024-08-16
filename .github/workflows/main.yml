@@ -33,6 +33,9 @@ jobs:
           - name: opi5plus
             script: ./install_opi5.sh
             base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.1.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5-plus.img.xz
+          - name: opi5pro
+            script: ./install_opi5.sh
+            base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.1.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5-pro.img.xz
 
     name: "Build for ${{ matrix.name }}"
 
@@ -58,7 +61,7 @@ jobs:
         mv ${{ steps.install_deps.outputs.image }} photonvision_${{ matrix.name }}.img
         sudo xz -T 0 -v photonvision_${{ matrix.name }}.img
 
-    - uses: actions/upload-artifact@v4.3.3
+    - uses: actions/upload-artifact@v4.3.4
       with:
         name: photonvision_${{ matrix.name }}.img.xz
         path: photonvision_${{ matrix.name }}.img.xz
@@ -70,7 +73,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       # Download literally every single artifact
-      - uses: actions/download-artifact@v4.1.7
+      - uses: actions/download-artifact@v4.1.8
       - run: find
       # Push to dev release
       - uses: pyTooling/Actions/releaser@v1.0.5
@@ -82,7 +85,7 @@ jobs:
             **/*.xz
         if: github.event_name == 'push'
       # Upload all xz archives to GH tag if tagged
-      - uses: softprops/action-gh-release@v2.0.6
+      - uses: softprops/action-gh-release@v2.0.8
         with:
           files: |
             **/*.xz
