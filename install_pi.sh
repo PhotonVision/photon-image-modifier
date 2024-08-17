@@ -1,10 +1,5 @@
 # Run normal photon installer
-
-wget https://git.io/JJrEP -O install.sh
-chmod +x install.sh
 ./install.sh
-rm install.sh
-
 
 # and edit boot partition
 install -m 644 config.txt /boot/

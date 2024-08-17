@@ -1,11 +1,5 @@
 # Run normal photon installer
-
-wget https://git.io/JJrEP -O install.sh
-chmod +x install.sh
-./install.sh
-rm install.sh
-
-
+./install.sh -q
 
 # edit boot partition
 install -m 644 limelight/config.txt /boot/

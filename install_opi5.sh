@@ -33,13 +33,7 @@ freed=$(( before - after ))
 echo "Freed up $freed KiB"
 
 # run Photonvision install script
-wget https://git.io/JJrEP -O install.sh
-chmod +x install.sh
-
-sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=0-7/g' install.sh
-
 ./install.sh -m -q
-rm install.sh
 
 echo "Installing additional things"
 
