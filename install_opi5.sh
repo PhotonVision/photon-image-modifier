@@ -33,6 +33,7 @@ freed=$(( before - after ))
 echo "Freed up $freed KiB"
 
 # run Photonvision install script
+chmod +x ./install.sh
 ./install.sh -m -q
 
 echo "Installing additional things"

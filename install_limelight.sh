@@ -1,4 +1,5 @@
 # Run normal photon installer
+chmod +x ./install.sh
 ./install.sh -q
 
 # edit boot partition
