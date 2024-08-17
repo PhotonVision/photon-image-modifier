@@ -120,7 +120,6 @@ fi
 echo "Installing the JRE..."
 if ! package_is_installed openjdk-17-jre-headless
 then
-   apt-get update
    apt-get install --yes openjdk-17-jre-headless
 fi
 echo "JRE installation complete."
@@ -129,6 +128,7 @@ echo "Installing additional math packages"
 if [[ "$DISTRO" = "Ubuntu" && -z $(apt-cache search libcholmod3) ]]; then
   echo "Adding jammy to list of apt sources"
   add-apt-repository -y -S 'deb http://ports.ubuntu.com/ubuntu-ports jammy main universe'
+  apt-get --quiet update
 fi
 apt-get install --yes libcholmod3 liblapack3 libsuitesparseconfig5
 
