@@ -1,11 +1,6 @@
 # Run normal photon installer
-
-wget https://git.io/JJrEP -O install.sh
-chmod +x install.sh
-./install.sh
-rm install.sh
-
-
+chmod +x ./install.sh
+./install.sh -q
 
 # edit boot partition
 install -m 644 limelight/config.txt /boot/
@@ -33,13 +28,10 @@ apt-get autoremove -y
 
 echo "Installing additional things"
 sudo apt-get update
-apt-get install -y pigpiod pigpio device-tree-compiler
-apt-get install -y network-manager
-apt-get install -y net-tools
+apt-get install -y pigpiod pigpio device-tree-compiler libraspberrypi-bin
+apt-get install -y network-manager net-tools
 # libcamera-driver stuff
-apt-get install -y libegl1 libopengl0 libgl1-mesa-dri libcamera0.3 libgbm1 libatomic1
-# mrcal stuff
-apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
+apt-get install -y libegl1 libopengl0 libopencv-core406 libgl1-mesa-dri libcamera0.1 libgbm1
 
 rm -rf /var/lib/apt/lists/*
 apt-get clean

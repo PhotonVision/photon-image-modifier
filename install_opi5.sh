@@ -33,17 +33,11 @@ freed=$(( before - after ))
 echo "Freed up $freed KiB"
 
 # run Photonvision install script
-wget https://git.io/JJrEP -O install.sh
-chmod +x install.sh
-
-sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=0-7/g' install.sh
-
+chmod +x ./install.sh
 ./install.sh -m -q
-rm install.sh
 
 echo "Installing additional things"
-
-apt-get install --yes --quiet network-manager net-tools libatomic1
+apt-get install --yes --quiet libc6 libstdc++6
 
 # let netplan create the config during cloud-init
 rm -f /etc/netplan/00-default-nm-renderer.yaml
@@ -54,17 +48,12 @@ cp -f ./OPi5_CIDATA/network-config /boot/network-config
 # add customized user-data file for cloud-init
 cp -f ./OPi5_CIDATA/user-data /boot/user-data
 
-# tell NetworkManager not to wait for the carrier on ethernet, which can delay boot
-# when the coprocessor isn't connected to the ethernet
-# cat > /etc/NetworkManager/conf.d/50-ignore-carrier.conf <<EOF
-# [main]
-# ignore-carrier=*
-# EOF
-
 # modify photonvision.service to wait for the network before starting
 # this helps ensure that photonvision detects the network the first time it starts
 # but it may cause a startup delay if the coprocessor isn't connected to a network
-sed -i '/Description/aAfter=network-online.target' /etc/systemd/system/photonvision.service
+sed -i '/Description/aAfter=network-online.target' /lib/systemd/system/photonvision.service
+cp /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
+chmod 644 /etc/systemd/system/photonvision.service
 cat /etc/systemd/system/photonvision.service
 
 # networkd isn't being used, this causes an unnecessary delay
@@ -72,20 +61,6 @@ systemctl disable systemd-networkd-wait-online.service
 
 # the bluetooth service isn't needed and causes a delay at boot
 systemctl disable ap6275p-bluetooth.service
-
-apt-get install --yes --quiet libc6 libstdc++6
-
-if [ $(cat /etc/lsb-release | grep -c "24.04") -gt 0 ]; then
-    # add jammy to apt sources 
-    echo "Adding jammy to list of apt sources"
-    add-apt-repository -y -S 'deb http://ports.ubuntu.com/ubuntu-ports jammy main universe'
-fi
-
-apt-get --quiet update
-
-# mrcal stuff
-apt-get install --yes --quiet libcholmod3 liblapack3 libsuitesparseconfig5
-
 
 rm -rf /var/lib/apt/lists/*
 apt-get --yes --quiet clean

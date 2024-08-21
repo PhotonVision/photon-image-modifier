@@ -1,4 +1,5 @@
 # Run the pi install script
+chmod +x ./install_pi.sh
 ./install_pi.sh
 
 # Add the one extra file for the snakeyes hardware config
