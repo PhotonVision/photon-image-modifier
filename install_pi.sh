@@ -25,10 +25,10 @@ apt-get autoremove -y
 
 echo "Installing additional things"
 sudo apt-get update
-apt-get install -y pigpiod pigpio device-tree-compiler libraspberrypi-bin
+apt-get install -y pigpiod pigpio device-tree-compiler
 apt-get install -y network-manager net-tools
 # libcamera-driver stuff
-apt-get install -y libegl1 libopengl0 libopencv-core406 libgl1-mesa-dri libcamera0.1 libgbm1
+apt-get install -y libegl1 libopengl0 libgl1-mesa-dri libcamera0.3 libgbm1
 
 rm -rf /var/lib/apt/lists/*
 apt-get clean
