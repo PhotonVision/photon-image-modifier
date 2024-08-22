@@ -28,7 +28,7 @@ sudo apt-get update
 apt-get install -y pigpiod pigpio device-tree-compiler
 apt-get install -y network-manager net-tools
 # libcamera-driver stuff
-apt-get install -y libegl1 libopengl0 libgl1-mesa-dri libcamera0.3 libgbm1
+apt-get install -y libegl1 libopengl0 libgl1-mesa-dri libgbm1 libcamera-dev
 
 rm -rf /var/lib/apt/lists/*
 apt-get clean
