@@ -2,12 +2,9 @@
 chmod +x ./install.sh
 ./install.sh -q
 
-# edit boot partition
-install -m 644 limelight/config.txt /boot/
+# and edit boot partition
+install -m 644 config.txt /boot/
 install -m 644 userconf.txt /boot/
-
-# install LL DTS
-dtc -O dtb limelight/gloworm-dt.dts -o /boot/dt-blob.bin
 
 # Kill wifi and other networking things
 install -v -m 644 files/wait.conf /etc/systemd/system/dhcpcd.service.d/
@@ -23,7 +20,7 @@ systemctl enable pigpiod
 
 # Remove extra packages too
 echo "Purging extra things"
-apt-get purge -y gdb gcc g++ linux-headers* libgcc*-dev libqt* wpasupplicant wireless-tools firmware-atheros firmware-brcm80211 firmware-libertas firmware-misc-nonfree firmware-realtek raspberrypi-net-mods
+apt-get purge -y gdb gcc g++ linux-headers* libgcc*-dev
 apt-get autoremove -y
 
 echo "Installing additional things"
@@ -31,7 +28,7 @@ sudo apt-get update
 apt-get install -y pigpiod pigpio device-tree-compiler
 apt-get install -y network-manager net-tools
 # libcamera-driver stuff
-apt-get install -y libegl1 libopengl0 libgl1-mesa-dri libcamera-dev libgbm1
+apt-get install -y libegl1 libopengl0 libgl1-mesa-dri libgbm1 libegl1-mesa-dev libcamera-dev cmake build-essential libdrm-dev libgbm-dev default-jdk openjdk-17-jdk
 
 rm -rf /var/lib/apt/lists/*
 apt-get clean
