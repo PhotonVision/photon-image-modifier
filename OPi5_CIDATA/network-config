@@ -14,8 +14,6 @@
 #
 # https://en.wikipedia.org/wiki/YAML
 
-# Some additional examples are commented out below
-
 network:
   version: 2
   renderer: NetworkManager
@@ -26,10 +24,36 @@ network:
         name: "en*"
       dhcp4: true
       optional: true
+      networkmanager:
+        passthrough:
+          connection.autoconnect-priority: 50
+          connection.autoconnect-retries: 2
     zz-all-eth:
       renderer: NetworkManager
       match:
         name: "eth*"
       dhcp4: true
       optional: true
-
+      networkmanager:
+        passthrough:
+          connection.autoconnect-priority: 50
+          connection.autoconnect-retries: 2
+    # Link-local as fallback for direct connection
+    zz-all-en-ll:
+      match:
+        name: en*
+      dhcp4: false
+      link-local: [ ipv4 ]
+      renderer: NetworkManager
+      networkmanager:
+        passthrough:
+          connection.autoconnect-priority: -1
+    zz-all-eth-ll:
+      match:
+        name: eth*
+      dhcp4: false
+      link-local: [ ipv4 ]
+      renderer: NetworkManager
+      networkmanager:
+        passthrough:
+          connection.autoconnect-priority: -1
