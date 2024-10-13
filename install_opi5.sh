@@ -15,8 +15,9 @@ apt-get update --quiet
 
 before=$(df --output=used / | tail -n1)
 # clean up stuff
-echo 'Purging snaps'
+
 # get rid of snaps
+echo "Purging snaps"
 rm -rf /var/lib/snapd/seed/snaps/*
 rm -f /var/lib/snapd/seed/seed.yaml
 apt-get purge --yes --quiet lxd-installer lxd-agent-loader
@@ -61,6 +62,14 @@ systemctl disable systemd-networkd-wait-online.service
 
 # the bluetooth service isn't needed and causes a delay at boot
 systemctl disable ap6275p-bluetooth.service
+
+# enable big cores
+echo "Enabling big cores"
+sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
+cp -f /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
+chmod 644 /etc/systemd/system/photonvision.service
+systemctl daemon-reload
+systemctl enable photonvision.service
 
 rm -rf /var/lib/apt/lists/*
 apt-get --yes --quiet clean
