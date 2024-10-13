@@ -1,6 +1,6 @@
 # Run normal photon installer
 chmod +x ./install.sh
-./install.sh -q
+./install.sh --install-nm=yes
 
 # edit boot partition
 install -m 644 limelight/config.txt /boot/
