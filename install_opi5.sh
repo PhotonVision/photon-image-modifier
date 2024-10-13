@@ -49,11 +49,14 @@ cp -f ./OPi5_CIDATA/network-config /boot/network-config
 # add customized user-data file for cloud-init
 cp -f ./OPi5_CIDATA/user-data /boot/user-data
 
+# modify photonvision.service to enable big cores
+sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
+
 # modify photonvision.service to wait for the network before starting
 # this helps ensure that photonvision detects the network the first time it starts
 # but it may cause a startup delay if the coprocessor isn't connected to a network
 sed -i '/Description/aAfter=network-online.target' /lib/systemd/system/photonvision.service
-cp /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
+cp -f /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
 chmod 644 /etc/systemd/system/photonvision.service
 cat /etc/systemd/system/photonvision.service
 
@@ -62,14 +65,6 @@ systemctl disable systemd-networkd-wait-online.service
 
 # the bluetooth service isn't needed and causes a delay at boot
 systemctl disable ap6275p-bluetooth.service
-
-# enable big cores
-echo "Enabling big cores"
-sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
-cp -f /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
-chmod 644 /etc/systemd/system/photonvision.service
-systemctl daemon-reload
-systemctl enable photonvision.service
 
 rm -rf /var/lib/apt/lists/*
 apt-get --yes --quiet clean
