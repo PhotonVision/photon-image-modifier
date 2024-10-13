@@ -198,6 +198,9 @@ fi
 debug "This is the installation script for PhotonVision."
 debug "Installing for platform $ARCH"
 
+echo "*** CPU Info ******************************************************************"
+cat /proc/cpuinfo
+
 DISTRO=$(lsb_release -is)
 
 if [[ "$DISTRO" != "Ubuntu" || -n "$DISABLE_NETWORKING" || -n "$QUIET" ]] ; then
