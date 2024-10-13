@@ -198,7 +198,13 @@ fi
 debug "This is the installation script for PhotonVision."
 debug "Installing for platform $ARCH"
 
-echo "*** CPU Info ******************************************************************"
+echo "*** ischroot ***********************************************************"
+if ischroot; then
+  echo "Running in chroot"
+fi
+echo "*** uname **************************************************************"
+uname --all
+echo "*** CPU Info ***********************************************************"
 cat /proc/cpuinfo
 
 DISTRO=$(lsb_release -is)
