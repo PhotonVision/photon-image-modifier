@@ -321,7 +321,7 @@ if [ "$DISABLE_NETWORKING" = "true" ]; then
 fi
 
 if [[ -n $(cat /proc/cpuinfo | grep "RK3588") ]]; then
-  debug "This has a Rockchip RK3588, enabling all cores"
+  debug "This has a Rockchip RK3588, enabling big cores"
   sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
 fi
 
