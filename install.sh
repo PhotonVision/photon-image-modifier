@@ -111,7 +111,8 @@ Syntax: sudo ./install.sh [options]
       NetworkManager (ignoring -m,--install-nm).
   -q, --quiet
       Silent install, automatically accepts all defaults. For
-      non-interactive use. Forces --install-nm="no".
+      non-interactive use. Forces --install-nm="no" unless 
+      --install-nm="yes" is explicitly specified.
 
 EOF
 }
@@ -209,8 +210,11 @@ cat /proc/cpuinfo
 
 DISTRO=$(lsb_release -is)
 
-if [[ "$DISTRO" != "Ubuntu" || -n "$DISABLE_NETWORKING" || -n "$QUIET" ]] ; then
-  INSTALL_NETWORK_MANAGER="no"
+if [[ "$INSTALL_NETWORK_MANAGER" == "ask" ]]; then
+  # make sure that asking about network manager makes sense
+  if [[ "$DISTRO" != "Ubuntu" || -n "$DISABLE_NETWORKING" || -n "$QUIET" ]] ; then
+    INSTALL_NETWORK_MANAGER="no"
+  fi
 fi
 
 if [[ "$INSTALL_NETWORK_MANAGER" == "ask" ]]; then
