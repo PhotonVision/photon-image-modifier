@@ -223,6 +223,8 @@ if [[ "$INSTALL_NETWORK_MANAGER" == "ask" ]]; then
   read -p "Do you want this script to install and configure NetworkManager? [y/N]: " response
   if [[ $response == [yY] || $response == [yY][eE][sS] ]]; then
     INSTALL_NETWORK_MANAGER="yes"
+  else
+    INSTALL_NETWORK_MANAGER="no"
   fi
 fi
 
