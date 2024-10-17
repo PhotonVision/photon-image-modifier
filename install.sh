@@ -38,12 +38,12 @@ install_if_missing() {
 }
 
 get_photonvision_releases() {
-  if ! command -v curl > /dev/null 2>&1 ; then
-    die "./install --list-versions requires curl and it is not installed."
+  if ! command -v wget > /dev/null 2>&1 ; then
+    die "./install.sh --list-versions requires wget and it is not installed."
   fi
 
   if [ -z "$PHOTON_VISION_RELEASES" ] ; then
-    PHOTON_VISION_RELEASES="$(curl -sk https://api.github.com/repos/photonvision/photonvision/releases)"
+    PHOTON_VISION_RELEASES="$(wget -qO- https://api.github.com/repos/photonvision/photonvision/releases)"
   fi
 
  echo "$PHOTON_VISION_RELEASES"
