@@ -211,20 +211,18 @@ cat /proc/cpuinfo
 DISTRO=$(lsb_release -is)
 
 if [[ "$INSTALL_NETWORK_MANAGER" == "ask" ]]; then
-  # make sure that asking about network manager makes sense
   if [[ "$DISTRO" != "Ubuntu" || -n "$DISABLE_NETWORKING" || -n "$QUIET" ]] ; then
+    # Only ask if it makes sense to do so
     INSTALL_NETWORK_MANAGER="no"
-  fi
-fi
-
-if [[ "$INSTALL_NETWORK_MANAGER" == "ask" ]]; then
-  debug ""
-  debug "Photonvision uses NetworkManager to control networking on your device."
-  read -p "Do you want this script to install and configure NetworkManager? [y/N]: " response
-  if [[ $response == [yY] || $response == [yY][eE][sS] ]]; then
-    INSTALL_NETWORK_MANAGER="yes"
   else
-    INSTALL_NETWORK_MANAGER="no"
+    debug ""
+    debug "Photonvision uses NetworkManager to control networking on your device."
+    read -p "Do you want this script to install and configure NetworkManager? [y/N]: " response
+    if [[ $response == [yY] || $response == [yY][eE][sS] ]]; then
+      INSTALL_NETWORK_MANAGER="yes"
+    else
+      INSTALL_NETWORK_MANAGER="no"
+    fi
   fi
 fi
 
