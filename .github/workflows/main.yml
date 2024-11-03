@@ -65,8 +65,6 @@ jobs:
           chmod +x ${{matrix.script}}
           ${{ matrix.script }}
           echo "${{ github.ref_name }}" > /opt/photonvision/image-version
-          echo "****** ref-name *****************************************"
-          cat /opt/photonvision/image-version
 
     - name: Compress built image
       run: |
