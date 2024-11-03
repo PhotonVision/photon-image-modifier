@@ -33,20 +33,25 @@ install_if_missing() {
   fi
 
   debug "Installing $1..."
-  apt-get install --yes $1
+  apt-get install --yes "$1"
   debug "$1 installation complete."
 }
 
 get_photonvision_releases() {
-  if ! command -v wget > /dev/null 2>&1 ; then
-    die "./install.sh --list-versions requires wget and it is not installed."
+  # Return cached input
+  if [ -n "$PHOTON_VISION_RELEASES" ] ; then
+    echo "$PHOTON_VISION_RELEASES"
+    return
   fi
 
-  if [ -z "$PHOTON_VISION_RELEASES" ] ; then
+  # Use curl if available, otherwise fallback to wget
+  if command -v curl > /dev/null 2>&1 ; then
+    PHOTON_VISION_RELEASES="$(curl -sk https://api.github.com/repos/photonvision/photonvision/releases)"
+  else
     PHOTON_VISION_RELEASES="$(wget -qO- https://api.github.com/repos/photonvision/photonvision/releases)"
   fi
 
- echo "$PHOTON_VISION_RELEASES"
+  echo "$PHOTON_VISION_RELEASES"
 }
 
 get_versions() {
@@ -64,17 +69,11 @@ is_version_available() {
 
   # latest is a special case
   if [ "$target_version" = "latest" ]; then
-    return
-  fi
-
-  # Check if the version is present
-  if ! echo "$(get_versions)" | grep -qFx "$target_version"; then
-    return 1
+    return 0
   fi
 
   # Check if multiple lines are match. You can only match 1.
-  local line_count="$(echo "$versions" | grep -cFx "$target_string")"
-  if [ $line_count -gt 1 ] ; then
+  if [ "$(get_versions | grep -cFx "$target_version")" -ne 1 ] ; then
     return 1
   fi
 
@@ -100,19 +99,16 @@ Syntax: sudo ./install.sh [options]
       Install PhotonVision for the specified architecture.
       Supported values: aarch64, x86_64
   -m [option], --install-nm=[option]
-      Whether or not to install NetworkManager. Only used on
-      Ubuntu, and ignored for all other distros.
-      Supported options are: "yes", "no", and "ask".
-      "ask" prompts the user for installation of NetworkManager.
-      If not specified, will fall back to "ask".
-      If specified, "yes" is the default option.
+      Controls NetworkManager installation (Ubuntu only).
+      Options: "yes", "no", "ask".
+      Default: "ask" (unless -q or --quiet is specified, then "no").
+      "ask" prompts for installation. Ignored on other distros.
   -n, --no-networking
       Disable networking. This will also prevent installation of
-      NetworkManager (ignoring -m,--install-nm).
+      NetworkManager, overriding -m,--install-nm.
   -q, --quiet
       Silent install, automatically accepts all defaults. For
-      non-interactive use. Forces --install-nm="no" unless 
-      --install-nm="yes" is explicitly specified.
+      non-interactive use. Makes -m,--install-nm default to "no".
 
 EOF
 }
@@ -138,12 +134,12 @@ while getopts "hlv:a:mnq-:" OPT; do
       ;;
     v | version)
       needs_arg
-      VERSION=$(echo "$OPTARG" | sed 's/^v//')  # drop leading 'v's
+      VERSION=${OPTARG#v}  # drop leading 'v's
       ;;
     a | arch) needs_arg; ARCH=$OPTARG
       ;;
     m | install-nm)
-      INSTALL_NETWORK_MANAGER="$(echo ${OPTARG:-'yes'} | tr '[:upper:]' '[:lower:]')"
+      INSTALL_NETWORK_MANAGER="$(echo "${OPTARG:-'yes'}" | tr '[:upper:]' '[:lower:]')"
       case "$INSTALL_NETWORK_MANAGER" in
         yes)
           ;;
@@ -171,8 +167,6 @@ while getopts "hlv:a:mnq-:" OPT; do
   esac
 done
 
-shift $(($OPTIND -1))
-
 if [ "$(id -u)" != "0" ]; then
    die "This script must be run as root"
 fi
@@ -199,30 +193,24 @@ fi
 debug "This is the installation script for PhotonVision."
 debug "Installing for platform $ARCH"
 
-echo "*** ischroot ***********************************************************"
-if ischroot; then
-  echo "Running in chroot"
-fi
-echo "*** uname **************************************************************"
-uname --all
-echo "*** CPU Info ***********************************************************"
-cat /proc/cpuinfo
-
 DISTRO=$(lsb_release -is)
 
+# Only ask if it makes sense to do so.
+# i.e. the distro is Ubuntu, you haven't requested disabling networking,
+# and you have requested a quiet install.
 if [[ "$INSTALL_NETWORK_MANAGER" == "ask" ]]; then
   if [[ "$DISTRO" != "Ubuntu" || -n "$DISABLE_NETWORKING" || -n "$QUIET" ]] ; then
-    # Only ask if it makes sense to do so
     INSTALL_NETWORK_MANAGER="no"
-  else
-    debug ""
-    debug "Photonvision uses NetworkManager to control networking on your device."
-    read -p "Do you want this script to install and configure NetworkManager? [y/N]: " response
-    if [[ $response == [yY] || $response == [yY][eE][sS] ]]; then
-      INSTALL_NETWORK_MANAGER="yes"
-    else
-      INSTALL_NETWORK_MANAGER="no"
-    fi
+  fi
+fi
+
+if [[ "$INSTALL_NETWORK_MANAGER" == "ask" ]]; then
+  debug ""
+  debug "Photonvision uses NetworkManager to control networking on your device."
+  debug "This could possibly mess up the network configuration in Ubuntu."
+  read -p "Do you want this script to install and configure NetworkManager? [y/N]: " response
+  if [[ $response == [yY] || $response == [yY][eE][sS] ]]; then
+    INSTALL_NETWORK_MANAGER="yes"
   fi
 fi
 
@@ -286,7 +274,7 @@ else
 fi
 
 mkdir -p /opt/photonvision
-cd /opt/photonvision
+cd /opt/photonvision || die "Tried to enter /opt/photonvision, but it was not created."
 curl -sk "$RELEASE_URL" |
     grep "browser_download_url.*$ARCH_NAME.jar" |
     cut -d : -f 2,3 |
@@ -333,7 +321,7 @@ if [ "$DISABLE_NETWORKING" = "true" ]; then
   sed -i "s/photonvision.jar/photonvision.jar -n/" /lib/systemd/system/photonvision.service
 fi
 
-if [[ -n $(cat /proc/cpuinfo | grep "RK3588") ]]; then
+if grep -q "RK3588" /proc/cpuinfo; then
   debug "This has a Rockchip RK3588, enabling big cores"
   sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
 fi
