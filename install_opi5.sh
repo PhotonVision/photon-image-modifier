@@ -26,13 +26,6 @@ apt-get purge --yes --quiet snapd
 # remove bluetooth daemon
 apt-get purge --yes --quiet bluez
 
-# remove unused firmware (experimental)
-rm -rf /usr/lib/firmware/mrvl/
-rm -rf /usr/lib/firmware/mellanox/
-rm -rf /usr/lib/firmware/nvidia/
-rm -rf /usr/lib/firmware/intel/
-rm -rf /usr/lib/firmware/amdgpu/
-
 apt-get --yes --quiet autoremove
 
 after=$(df --output=used / | tail -n1)
