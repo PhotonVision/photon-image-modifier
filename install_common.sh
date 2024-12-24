@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Run normal photon installer
+# Run standard photon installer
 chmod +x ./install.sh
 ./install.sh --install-nm=yes --arch=aarch64
 
@@ -18,4 +18,3 @@ EOF
 cp -f ./files/issue /etc/issue
 cp -f /etc/issue /etc/issue.net
 sed -i 's/#Banner none/Banner \/etc\/issue.net/g' /etc/ssh/sshd_config
-
