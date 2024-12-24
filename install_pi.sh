@@ -1,6 +1,6 @@
 # Run normal photon installer
-chmod +x ./install.sh
-./install.sh --install-nm=yes --arch=aarch64
+chmod +x ./install_common.sh
+./install_common.sh
 
 # and edit boot partition
 install -m 644 config.txt /boot/
