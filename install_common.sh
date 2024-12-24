@@ -1,11 +1,8 @@
-#!/bin/bash
-
-# Run standard photon installer
-chmod +x ./install.sh
-./install.sh --install-nm=yes --arch=aarch64
+#!/bin/bash -v
 
 # Do additional tasks that are common across all images, 
 # but not suitable for inclusion in install.sh
+echo "Running install_common.sh"
 
 # Limit the maximum length of systemd-journald logs
 cat > /etc/systemd/journald.conf.d/60-limit-log-size.conf <<EOF
