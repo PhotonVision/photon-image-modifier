@@ -1,0 +1,19 @@
+                                        
+              #######                   PhotonVision is the free, fast, and 
+           #############                easy-to-use computer vision solution 
+         #################              for the FIRST Robotics Competition. 
+       ######        ######   :::       
+      #####            ##*::::::::::    To configure PhotonVision, open:
+     #####     :::::::::::::::::::      
+     #### :::::::::::    ###            http://photonvision.local:5800
+     ####                ####           
+    ####                 ####           using a computer on the same network 
+    #### ::              ###            as this device.
+     #### :::::::       ####            
+     ####     ::::::::  ####            Documentation is available at: 
+     #####         ::::::::    :        
+      ######        ####:::::::::       https://docs.photonvision.org/
+       ##################    ::::::     
+         ##############                 
+           #########                    
+    
