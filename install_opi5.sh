@@ -1,3 +1,4 @@
+#!/bin/bash -v
 
 # Create pi/raspberry login
 if id "$1" >/dev/null 2>&1; then
@@ -47,7 +48,7 @@ rm -f /etc/netplan/00-default-nm-renderer.yaml
 cp -f ./OPi5_CIDATA/network-config /boot/network-config
 
 # disable all wireless devices
-rfkill block all
+nmcli radio all off
 
 # add customized user-data file for cloud-init
 cp -f ./OPi5_CIDATA/user-data /boot/user-data
