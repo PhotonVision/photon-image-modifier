@@ -46,6 +46,9 @@ rm -f /etc/netplan/00-default-nm-renderer.yaml
 # set NetworkManager as the renderer in cloud-init
 cp -f ./OPi5_CIDATA/network-config /boot/network-config
 
+# disable all wireless devices
+rfkill block all
+
 # add customized user-data file for cloud-init
 cp -f ./OPi5_CIDATA/user-data /boot/user-data
 

@@ -115,4 +115,5 @@ ssh_pwauth: true
 #- [ wget, "http://ubuntu.com", -O, /run/mydir/index.html ]
 
 runcmd:
+- [ rfkill, block, all ]
 - [ touch, /etc/cloud/cloud-init.disabled ]
