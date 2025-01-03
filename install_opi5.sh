@@ -25,7 +25,7 @@ apt-get purge --yes --quiet lxd-installer lxd-agent-loader
 apt-get purge --yes --quiet snapd
 
 # remove bluetooth daemon
-apt-get purge --yes --quiet bluez
+# apt-get purge --yes --quiet bluez
 
 apt-get --yes --quiet autoremove
 
@@ -65,7 +65,8 @@ cat /etc/systemd/system/photonvision.service
 systemctl disable systemd-networkd-wait-online.service
 
 # the bluetooth service isn't needed and causes a delay at boot
-systemctl disable ap6275p-bluetooth.service
+# systemctl disable ap6275p-bluetooth.service
+# systemctl disable ap6256s-bluetooth.service
 
 rm -rf /var/lib/apt/lists/*
 apt-get --yes --quiet clean
