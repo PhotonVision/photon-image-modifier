@@ -25,7 +25,7 @@ apt-get purge --yes --quiet lxd-installer lxd-agent-loader
 apt-get purge --yes --quiet snapd
 
 # remove bluetooth daemon
-# apt-get purge --yes --quiet bluez
+apt-get purge --yes --quiet bluez
 
 apt-get --yes --quiet autoremove
 
@@ -64,9 +64,18 @@ cat /etc/systemd/system/photonvision.service
 # networkd isn't being used, this causes an unnecessary delay
 systemctl disable systemd-networkd-wait-online.service
 
-# the bluetooth service isn't needed and causes a delay at boot
-# systemctl disable ap6275p-bluetooth.service
-# systemctl disable ap6256s-bluetooth.service
+# the bluetooth service isn't needed and causes problems with cloud-init
+# the chip has different names on different boards. Examples are:
+#   OrangePi5: ap6275p-bluetooth.service
+#   OrangePi5pro: ap6256s-bluetooth.service
+#   OrangePi5b: ap6275p-bluetooth.service
+#   OrangePi5max: ap6611s-bluetooth.service
+# instead of keeping a catalog of these services, find them based on a pattern and mask them
+btservices=$(systemctl list-unit-files *bluetooth.service | tail -n +2 | head -n -1 | awk '{print $1}')
+for btservice in $btservices; do
+    echo "Masking: $btservice"
+    systemctl mask "$btservice"
+done
 
 rm -rf /var/lib/apt/lists/*
 apt-get --yes --quiet clean
