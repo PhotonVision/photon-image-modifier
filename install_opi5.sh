@@ -52,17 +52,15 @@ cp -f ./OPi5_CIDATA/user-data /boot/user-data
 
 # modify photonvision.service to enable big cores
 sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
-
-# modify photonvision.service to wait for the network before starting
-# this helps ensure that photonvision detects the network the first time it starts
-# but it may cause a startup delay if the coprocessor isn't connected to a network
-sed -i '/Description/aAfter=network-online.target' /lib/systemd/system/photonvision.service
 cp -f /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
 chmod 644 /etc/systemd/system/photonvision.service
 cat /etc/systemd/system/photonvision.service
 
 # networkd isn't being used, this causes an unnecessary delay
 systemctl disable systemd-networkd-wait-online.service
+
+# PhotonVision server is managing the network, so it doesn't need to wait for online
+systemctl disable NetworkManager-wait-online.service
 
 # the bluetooth service isn't needed and causes problems with cloud-init
 # the chip has different names on different boards. Examples are:
