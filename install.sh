@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Verbose and exit on errors
+set -ex
+
 needs_arg() {
     if [ -z "$OPTARG" ]; then
       die "Argument is required for --$OPT option" \
