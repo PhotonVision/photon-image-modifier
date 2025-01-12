@@ -263,10 +263,12 @@ if [[ "$INSTALL_NETWORK_MANAGER" == "yes" ]]; then
 
   debug "Configuring..."
   systemctl disable systemd-networkd-wait-online.service
-  cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
+  if [[ -d /etc/netplan/ ]]; then
+    cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
 network:
   renderer: NetworkManager
 EOF
+  fi
   debug "network-manager installation complete."
 fi
 
