@@ -1,5 +1,8 @@
 #!/bin/bash -v
 
+# Verbose and exit on errors
+set -ex
+
 # Create pi/raspberry login
 if id "$1" >/dev/null 2>&1; then
     echo 'user found'
