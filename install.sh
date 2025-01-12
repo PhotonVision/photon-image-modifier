@@ -91,10 +91,8 @@ is_version_available() {
 
 is_chroot() {
   if systemd-detect-virt -r; then
-    echo "Running in chroot"
     return 0
   else
-    echo "Running in standard system"
     return 1
   fi
 }
