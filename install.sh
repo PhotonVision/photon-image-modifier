@@ -89,6 +89,16 @@ is_version_available() {
   return 0
 }
 
+is_chroot() {
+  if systemd-detect-virt -r; then
+    echo "Running in chroot"
+    return 1
+  else
+    echo "Running in standard system"
+    return 0
+  fi
+}
+
 help() {
   cat << EOF
 This script installs Photonvision.
@@ -178,6 +188,10 @@ done
 
 if [ "$(id -u)" != "0" ]; then
    die "This script must be run as root"
+fi
+
+if is_chroot ; then
+  debug "Running in chroot. Arch should be specified."
 fi
 
 if [[ -z "$ARCH" ]]; then
