@@ -30,17 +30,19 @@ package_is_installed(){
 }
 
 install_if_missing() {
-  # Always mark our upstream apt deps as held back, which will prevent the package 
-  # from being automatically installed, upgraded or removed
-  apt-mark manual "$1"
-  
   if package_is_installed "$1" ; then
     debug "Found existing $1. Skipping..."
+    # Always mark our upstream apt deps as held back, which will prevent the package 
+    # from being automatically installed, upgraded or removed
+    apt-mark manual "$1"
     return
   fi
 
   debug "Installing $1..."
   apt-get install --yes "$1"
+  # Always mark our upstream apt deps as held back, which will prevent the package 
+  # from being automatically installed, upgraded or removed
+  apt-mark manual "$1"
   debug "$1 installation complete."
 }
 
