@@ -23,9 +23,9 @@ systemctl enable ssh
 systemctl enable pigpiod
 
 # Remove extra packages too
-echo "Purging extra things"
-apt-get purge -y gdb gcc g++ linux-headers* libgcc*-dev
-apt-get autoremove -y
+# echo "Purging extra things"
+# apt-get purge -y gdb gcc g++ linux-headers* libgcc*-dev
+# apt-get autoremove -y
 
 echo "Installing additional things"
 sudo apt-get update
