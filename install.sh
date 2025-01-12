@@ -27,6 +27,10 @@ package_is_installed(){
 }
 
 install_if_missing() {
+  # Always mark our upstream apt deps as held back, which will prevent the package 
+  # from being automatically installed, upgraded or removed
+  apt-mark hold "$1"
+  
   if package_is_installed "$1" ; then
     debug "Found existing $1. Skipping..."
     return
