@@ -308,15 +308,15 @@ debug "Downloaded PhotonVision."
 debug "Creating the PhotonVision systemd service..."
 
 # service --status-all doesn't list photonvision on OrangePi use systemctl instead:
-# if systemctl --quiet is-active photonvision; then
-#   debug "PhotonVision is already running. Stopping service."
-#   systemctl stop photonvision
-#   systemctl disable photonvision
-#   rm /lib/systemd/system/photonvision.service
-#   rm /etc/systemd/system/photonvision.service
-#   systemctl daemon-reload
-#   systemctl reset-failed
-# fi
+if [[ $(systemctl --quiet is-active photonvision) = "active" ]]; then
+  debug "PhotonVision is already running. Stopping service."
+  systemctl stop photonvision
+  systemctl disable photonvision
+  rm /lib/systemd/system/photonvision.service
+  rm /etc/systemd/system/photonvision.service
+  systemctl daemon-reload
+  systemctl reset-failed
+fi
 
 cat > /lib/systemd/system/photonvision.service <<EOF
 [Unit]
