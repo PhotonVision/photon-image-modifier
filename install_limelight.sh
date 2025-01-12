@@ -15,7 +15,7 @@ install -m 644 userconf.txt /boot/
 dtc -O dtb limelight/gloworm-dt.dts -o /boot/dt-blob.bin
 
 # Kill wifi and other networking things
-install -v -m 644 files/wait.conf /etc/systemd/system/dhcpcd.service.d/
+install -v -m 644 -D -t /etc/systemd/system/dhcpcd.service.d/ files/wait.conf
 install -v files/rpi-blacklist.conf /etc/modprobe.d/blacklist.conf
 
 # Update pigipio service file to listen locally
