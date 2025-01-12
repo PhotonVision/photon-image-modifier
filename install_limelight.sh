@@ -1,3 +1,8 @@
+#!/bin/bash -v
+
+# Verbose and exit on errors
+set -ex
+
 # Run normal photon installer
 chmod +x ./install.sh
 ./install.sh --install-nm=yes --arch=aarch64
