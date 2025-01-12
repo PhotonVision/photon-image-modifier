@@ -1,5 +1,8 @@
 #!/bin/bash -v
 
+# Verbose and exit on errors
+set -ex
+
 # Do additional tasks that are common across all images, 
 # but not suitable for inclusion in install.sh
 echo "Running install_common.sh"

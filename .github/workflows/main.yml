@@ -69,6 +69,7 @@ jobs:
           ${{ matrix.script }}
           chmod +x ./install_common.sh
           ./install_common.sh
+          mkdir -p /opt/photonvision/
           echo "${{ github.ref_name }};${{ matrix.name }}" > /opt/photonvision/image-version
 
     - name: Compress built image
