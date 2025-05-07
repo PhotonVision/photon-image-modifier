@@ -19,13 +19,13 @@ jobs:
         run: |
           wget https://thundercomm.s3.ap-northeast-1.amazonaws.com/uploads/web/rubik-pi-3/20250331/FlatBuild_RUBIKPi-3_xx.xx_Debian13.R.debug.ES.r000001.zip
           unzip FlatBuild_RUBIKPi-3_xx.xx_Debian13.R.debug.ES.r000001.zip
-          rm FlatBuild_RUBIKPi-3_xx.xx_Debian13.R.debug.ES.r000001.zip
+          rm -v FlatBuild_RUBIKPi-3_xx.xx_Debian13.R.debug.ES.r000001.zip
       - uses: pguyot/arm-runner-action@HEAD
         id: install_deps
         with:
           image_additional_mb: 1500
           bind_mount_repository: true
-          base_image: FlatBuild_RUBIKPi-3_xx.xx_Debian13.R.debug.ES.r000001/ufs/system.img
+          base_image: file://FlatBuild_RUBIKPi-3_xx.xx_Debian13.R.debug.ES.r000001/ufs/system.img
           commands: |
             chmod +x ./install_rubik.sh
             ./install_rubik.sh
