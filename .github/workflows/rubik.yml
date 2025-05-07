@@ -1,0 +1,73 @@
+name: Build Rubik PI Image
+on:
+  push:
+    branches: [main, rubik-pi]
+    tags:
+      - "v*"
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.7
+        with:
+          fetch-depth: 0
+      - name: Download image
+        run: |
+          wget https://thundercomm.s3.ap-northeast-1.amazonaws.com/uploads/web/rubik-pi-3/20250331/FlatBuild_RUBIKPi-3_xx.xx_Debian13.R.debug.ES.r000001.zip
+          unzip FlatBuild_RUBIKPi-3_xx.xx_Debian13.R.debug.ES.r000001.zip
+          rm FlatBuild_RUBIKPi-3_xx.xx_Debian13.R.debug.ES.r000001.zip
+      - uses: pguyot/arm-runner-action@HEAD
+        id: install_deps
+        with:
+          image_additional_mb: 1500
+          bind_mount_repository: true
+          base_image: FlatBuild_RUBIKPi-3_xx.xx_Debian13.R.debug.ES.r000001/ufs/system.img
+          commands: |
+            chmod +x ./install_rubik.sh
+            ./install_rubik.sh
+            chmod +x ./install_common.sh
+            ./install_common.sh
+            mkdir -p /opt/photonvision/
+            echo "${{ github.ref_name }};rubik3" > /opt/photonvision/image-version
+
+      - name: Compress built image
+        run: |
+          mv -f ${{ steps.install_deps.outputs.image }} FlatBuild_RUBIKPi-3_xx.xx_Debian13.R.debug.ES.r000001/ufs/system.img
+          zip -r photonvision_rubik.zip FlatBuild_RUBIKPi-3_xx.xx_Debian13.R.debug.ES.r000001
+          rm -rf FlatBuild_RUBIKPi-3_xx.xx_Debian13.R.debug.ES.r000001
+
+      - uses: actions/upload-artifact@v4.3.4
+        with:
+          name: photonvision_rubik.zip
+          path: photonvision_rubik.zip
+          if-no-files-found: error
+          retention-days: 1
+
+  release:
+    needs: [build]
+    runs-on: ubuntu-22.04
+    steps:
+      # Download literally every single artifact
+      - uses: actions/download-artifact@v4.1.8
+      - run: find
+      # Push to dev release
+      - uses: pyTooling/Actions/releaser@v1.0.5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: "Dev"
+          rm: true
+          files: |
+            **/*.zip
+        if: github.event_name == 'push'
+      # Upload archive to GH tag if tagged
+      - uses: softprops/action-gh-release@v2.0.8
+        with:
+          files: |
+            **/*.zip
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
