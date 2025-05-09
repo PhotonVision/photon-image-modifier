@@ -40,6 +40,6 @@ arm_boost=1
 # dtoverlay=imx290,clock-frequency=74250000
 # dtoverlay=imx290,clock-frequency=37125000
 # dtoverlay=imx378
-dtoverlay=ov9281,cam0
+dtoverlay=ov9281
 
 ##############################################################
