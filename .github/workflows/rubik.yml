@@ -25,7 +25,7 @@ jobs:
         with:
           image_additional_mb: 1500
           bind_mount_repository: true
-          base_image: file:///${{GITHUB_ACTION_PATH}}/FlatBuild_RUBIKPi-3_xx.xx_Debian13.R.debug.ES.r000001/ufs/system.img
+          base_image: file:///${{ github.workspace }}/FlatBuild_RUBIKPi-3_xx.xx_Debian13.R.debug.ES.r000001/ufs/system.img
           commands: |
             chmod +x ./install_rubik.sh
             ./install_rubik.sh
