@@ -3,6 +3,7 @@
 # Verbose and exit on errors
 set -ex
 
+
 # Run the pi install script
 chmod +x ./install_pi.sh
 ./install_pi.sh
