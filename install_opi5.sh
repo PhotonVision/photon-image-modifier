@@ -35,6 +35,14 @@ apt-get --yes --quiet autoremove
 after=$(df --output=used / | tail -n1)
 freed=$(( before - after ))
 
+# remove firmware that (probably) isn't needed
+rm -rf /usr/lib/firmware/mrvl
+rm -rf /usr/lib/firmware/mellanox
+rm -rf /usr/lib/firmware/qcom
+rm -rf /usr/lib/firmware/nvidia
+rm -rf /usr/lib/firmware/intel
+rm -rf /usr/lib/firmware/amdgpu
+
 echo "Freed up $freed KiB"
 
 # run Photonvision install script
