@@ -53,7 +53,7 @@ install_if_missing() {
 get_versions() {
   PHOTON_VISION_RELEASES="$(wget -qO- https://api.github.com/repos/photonvision/photonvision/releases?per_page=$1)"
 
-  PHOTON_VISION_VERSIONS=$(get_photonvision_releases | \
+  PHOTON_VISION_VERSIONS=$(echo "$PHOTON_VISION_RELEASES" | \
     sed -En 's/\"tag_name\": \"(.+)\",/\1/p' | \
     sed 's/^[[:space:]]*//'
   )
