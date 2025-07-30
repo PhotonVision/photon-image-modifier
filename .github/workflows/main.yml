@@ -64,12 +64,28 @@ jobs:
     - name: Fetch tags
       run: git fetch --tags --force
 
-    - uses: pguyot/arm-runner-action@HEAD
+    - name: Pre-process rubikpi3 image if needed
+      if: matrix.name == 'rubikpi3'
+      run: |
+        echo "Downloading and extracting rubikpi3 .tgz file..."
+        wget -O rubikpi3.tgz "${{ matrix.base_image }}"
+        tar -xzf rubikpi3.tgz
+        # Find the .img.xz file in the extracted contents
+        IMG_FILE=$(find . -name "*.img.xz" | head -1)
+        if [ -n "$IMG_FILE" ]; then
+          mv "$IMG_FILE" rubikpi3.img.xz
+          echo "Extracted image: rubikpi3.img.xz"
+        else
+          echo "Error: No .img.xz file found in the archive"
+          exit 1
+        fi
+
+    - uses: pguyot/arm-runner-action@v2.6.5
       id: install_deps
       with:
         image_additional_mb: 1500
         bind_mount_repository: true
-        base_image: ${{ matrix.base_image }}
+        base_image: ${{ matrix.name == 'rubikpi3' && format('file://{0}/rubikpi3.img.xz', github.workspace) || matrix.base_image }}
         commands: |
           chmod +x ${{matrix.script}}
           ${{ matrix.script }}
