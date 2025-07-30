@@ -15,18 +15,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: limelight
-            script: ./install_limelight.sh
-            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
-          - name: limelight3
-            script: ./install_limelight3.sh
-            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
-          - name: limelight3g
-            script: ./install_limelight3g.sh
-            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
-          - name: raspi
-            script: ./install_pi.sh
-            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
           - name: raspi_dev
             script: ./install_dev_pi.sh
             base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
@@ -36,24 +24,9 @@ jobs:
           - name: opi5
             script: ./install_opi5.sh
             base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5.img.xz
-          - name: opi5b
-            script: ./install_opi5.sh
-            base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5b.img.xz
-          - name: opi5plus
-            script: ./install_opi5.sh
-            base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5-plus.img.xz
-          - name: opi5pro
-            script: ./install_opi5.sh
-            base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5-pro.img.xz
-          - name: opi5max
-            script: ./install_opi5.sh
-            base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5-max.img.xz
-          - name: rock5c
-            script: ./install_opi5.sh
-            base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-rock-5c.img.xz
           - name: rubikpi3
-            script: ./install_rubikpi3.sh
-            base_image: https://testisdfasdfasdf.s3.us-east-2.amazonaws.com/ubuntu-24.04-preinstalled-desktop-arm64-rubikpi3.img.xz?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIARLLP4B4AUVVCFY5B%2F20250730%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20250730T211720Z&X-Amz-Expires=300&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEJ3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMiJHMEUCIAlcC%2BPnOnPrdr6tjn4n7gcOrf4JHJaKNIAXWbCxrgOVAiEA2xMXXU8Jpnkog%2FeE%2Bry5s%2B5ggHnQCzwy%2FT6Nk1oyv8Aq5AIIxv%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARAAGgwwOTMxMTMyOTA0OTciDAFdlDDwF0ifliwuYiq4AvQaUa5PBrqy4sn92ZJGcqolC421D1t4CsxigMHdgoScxunYpz29tOY2cYLbl%2FLvV3f6ASJNAtO9doVjMZKywCi2slM01vNjJYFWa6YJ%2B8%2B%2FEMECR91GxUpGOzTRS5dVPXNEwG5muX5Tp2UnHQjqezUiCW3i0AMB3qcTpaP%2FUy%2FbJR3c0K7jBZAcdffXVQG6EmxW0Jj4Gro6jSBBPPCu2%2FHPDAEd1s5c4LFCg9e0AZAi85JxSHNDgnQcMGWa3%2FW8xIWlX56QgDkUKuCFOLzfNuKTPqYsQfMe%2FcaHOBIyLdWYZAiXy%2B2f28GNzpWEYhetDwX4FZ8F2sxgSfcwlvy51UIBCi9THnvHflEeFG45FM5acdut4Bx%2FAHTKzaJJ8jpldIRkm9fbfstMHMDK4J%2FQWqYc3wNUlJgkZDCUiqnEBjqtAvw6Bz2ZLFmDaPvx%2BGJASjX9VPtoljaU8XYfHJMlAGxvEsfgFk67MMIkxKH5s6D%2BTmy4owOAV%2BsfD9nWeiiZH6s2Ak40hAkTMgVtqicmqwLw4XCaoGX7wTu%2B85vR%2BETZx1qaMXtjZJjVOy%2FX3KbHSRmLBrr%2FH%2FrOt0%2Fzpkutm2qbvn6%2FmtX8do9B76woRdUC56ZT1OTwZhQfTv9O9weRDoChaT1Ec2pPhxZOOLFEYr7XCGmlLsG746yf7CuLY7AMFwsHCopvugqq6KG93GXksVnjusSHW2C08KpI20zUvgTdbGov%2BVqQ0e%2BsyxLe%2BdELDDEyBF%2BPNVXRBtq9B52OQg8RXeOoYj98%2BHSBPOV4hptFd3YP40tCslVj7AxcbX1vxpR8dao9Hg9cN44Hp%2Bw%3D&X-Amz-Signature=3c68fe657ec85dd916d2b5769a97b37593df4f20f5bc265b65406e387b36b9c7&X-Amz-SignedHeaders=host&response-content-disposition=attachment
+            script: ./install_opi5.sh
+            base_image: https://testisdfasdfasdf.s3.us-east-2.amazonaws.com/ubuntu-24.04-preinstalled-desktop-arm64-rubikpi3.img.xz?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIARLLP4B4A3PU4NM3V%2F20250730%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20250730T214520Z&X-Amz-Expires=300&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEJ7%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMiJIMEYCIQDJ%2B2F%2FaPFRwyvMEmh%2B7l%2B6C12xOGUreWwxRhh5%2BMZMxwIhAO6Pvfne5dmy2R%2F2DJ5jjvHVDn581DovEPCDzC9PjCCHKuQCCMf%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQABoMMDkzMTEzMjkwNDk3IgylpKWPeT55TTaEUwUquAIcxtaZc6pK6S2plh%2BJyyQ%2BX4klnVMdd5G9f7jVk%2BMJ9nCTtdkCnMMmGfI8S2sGlLDweki3Z9K6KVOYpMf6TKNNfGrTch8DNRdiRTZ0z6EqGvoMiLNomd9nJCozB%2FEu2kVgKOq6VF%2B1lTBifVXiJ69%2Fc6P6GSHcaLpEW%2F4sCPX1dTyBGCrBOueA233ScH7jt6iPyHn461qJ1dQPTTG%2BwBjP2EJhgIX5Up7z2fhmDUq2ZFrWLmXeFmSqn5aU9Pvp9EGMWcxLPlENDgvh405Rcmnu4%2BcvslGDI95kq%2BSmhAajemCc%2FJvCH6n7DgVLjgUfu%2BN%2FVP%2BxtDoWm10TuxIWT%2F%2B5MUkKEy8qnyyEdrfS2KwxZDz3G9BcXuF2DvSOGySRf2nGV8VvIMDvVg1jZ9l25WkI%2FHDXyhsQbtwwlIqpxAY6rALMijg%2BOOPWRqCteS9honlOXs0jplT3Iu1EJl4emwaKglU4YxefIHTGrYQzsWOBElKpEa%2FTHOpQhlWcClXIEBujkizWoooEX8HwXDigYt5sztlLsGNdyIbQfqLC4VLTRGhdPZf%2BOdSE46%2F%2B%2BSC44xg4nNEwkgPXKwC8ETkBGVDtblmtB7SpG9aP5cUqeecfdAElZacHfpD62o6%2BRyYbJ5C45bupaIL2RXzj9fkj9AkmhNqWbflFOCwmHyltFSGGA5HKwfFFRxwOxPIMOOryxciQq5QMrdCrtI0FtxmMoPJ7WB8Zjn2PlKVK%2BRbC1Mn1aWgW%2F%2Bmjntkdz%2BtPCON5uI4ZWqkmmGKw1utztxMZRUKfjvRkm7gDsv8BC4y33g7aqEL%2BCALeZBnwdrcaZLc%3D&X-Amz-Signature=2a72e63ebd522624ead0fb070215d2e57fdc6d7b9fbc4677d3d83db53ee94987&X-Amz-SignedHeaders=host&response-content-disposition=attachment
             
     name: "Build for ${{ matrix.name }}"
 
@@ -64,28 +37,12 @@ jobs:
     - name: Fetch tags
       run: git fetch --tags --force
 
-    - name: Pre-process rubikpi3 image if needed
-      if: matrix.name == 'rubikpi3'
-      run: |
-        echo "Downloading and extracting rubikpi3 .tgz file..."
-        wget -O rubikpi3.tgz "${{ matrix.base_image }}"
-        tar -xzf rubikpi3.tgz
-        # Find the .img.xz file in the extracted contents
-        IMG_FILE=$(find . -name "*.img.xz" | head -1)
-        if [ -n "$IMG_FILE" ]; then
-          mv "$IMG_FILE" rubikpi3.img.xz
-          echo "Extracted image: rubikpi3.img.xz"
-        else
-          echo "Error: No .img.xz file found in the archive"
-          exit 1
-        fi
-
-    - uses: pguyot/arm-runner-action@v2.6.5
+    - uses: pguyot/arm-runner-action@HEAD
       id: install_deps
       with:
         image_additional_mb: 1500
         bind_mount_repository: true
-        base_image: ${{ matrix.name == 'rubikpi3' && format('file://{0}/rubikpi3.img.xz', github.workspace) || matrix.base_image }}
+        base_image: ${{ matrix.base_image }}
         commands: |
           chmod +x ${{matrix.script}}
           ${{ matrix.script }}
