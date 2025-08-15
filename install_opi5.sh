@@ -1,111 +1,85 @@
-name: Build driver
-on:
-  push:
-    branches: [ main ]
-    tags:
-      - 'v*'
-  pull_request:
-    branches: [ main ]
+#!/bin/bash -v
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+# Verbose and exit on errors
+set -ex
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: raspi_dev
-            script: ./install_dev_pi.sh
-            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
-          - name: snakeyes
-            script: ./install_snakeyes.sh
-            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
-          - name: opi5
-            script: ./install_opi5.sh
-            base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5.img.xz
-          - name: rubikpi3
-            script: ./install_opi5.sh
-            base_image: "https://testisdfasdfasdf.s3.us-east-2.amazonaws.com/ubuntu-24.04-preinstalled-desktop-arm64-rubikpi3.img.xz"
-                        
-    name: "Build for ${{ matrix.name }}"
+# Create pi/raspberry login
+if id "$1" >/dev/null 2>&1; then
+    echo 'user found'
+else
+    echo "creating pi user"
+    useradd pi -m -b /home -s /bin/bash
+    usermod -a -G sudo pi
+    echo 'pi ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/010_pi-nopasswd >/dev/null
+    chmod 0440 /etc/sudoers.d/010_pi-nopasswd
+fi
+echo "pi:raspberry" | chpasswd
 
-    steps:
-    - uses: actions/checkout@v4.1.7
-      with:
-        fetch-depth: 0
-    - name: Fetch tags
-      run: git fetch --tags --force
+apt-get update --quiet
 
-    - uses: pguyot/arm-runner-action@HEAD
-      id: install_deps
-      with:
-        image_additional_mb: 3800
-        bind_mount_repository: true
-        base_image: ${{ matrix.base_image }}
-        use_systemd_nspawn: false
-        commands: |
-          # Debug partition info for rubikpi3
-          if [ "${{ matrix.name }}" = "rubikpi3" ]; then
-            echo "Debugging partition layout..."
-            sudo fdisk -l /dev/loop0 || true
-            ls -la /dev/loop* || true
-            sudo partprobe /dev/loop0 || true
-            sleep 2
-            ls -la /dev/loop* || true
-          fi
-          chmod +x ${{matrix.script}}
-          ${{ matrix.script }}
-          chmod +x ./install_common.sh
-          ./install_common.sh
-          mkdir -p /opt/photonvision/
-          echo "${{ github.ref_name }};${{ matrix.name }}" > /opt/photonvision/image-version
+before=$(df --output=used / | tail -n1)
+# clean up stuff
 
-    - name: Compress built image
-      run: |
-        # Unmount if mounted
-        if mountpoint -q ./rootfs; then
-          sudo umount ./rootfs
-          rmdir ./rootfs
-        fi
-        mv ${{ steps.install_deps.outputs.image }} photonvision_${{ matrix.name }}.img
-        sudo xz -T 0 -v photonvision_${{ matrix.name }}.img
+# get rid of snaps
+echo "Purging snaps"
+rm -rf /var/lib/snapd/seed/snaps/*
+rm -f /var/lib/snapd/seed/seed.yaml
+apt-get purge --yes --quiet lxd-installer lxd-agent-loader
+apt-get purge --yes --quiet snapd
 
-    - uses: actions/upload-artifact@v4.3.4
-      with:
-        name: photonvision_${{ matrix.name }}.img.xz
-        path: photonvision_${{ matrix.name }}.img.xz
-        if-no-files-found: error
-        retention-days: 1
+# remove bluetooth daemon
+apt-get purge --yes --quiet bluez
 
-  release:
-    needs: [build]
-    runs-on: ubuntu-22.04
-    steps:
-      # Download literally every single artifact
-      - uses: actions/download-artifact@v4.1.8
-      - run: find
-      # Push to dev release
-      - uses: pyTooling/Actions/releaser@v1.0.5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: 'Dev'
-          rm: true
-          files: |
-            **/*.xz
-        if: github.event_name == 'push'
-      # Upload all xz archives to GH tag if tagged
-      - uses: softprops/action-gh-release@v2.0.8
-        with:
-          files: |
-            **/*opi5*.xz
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: softprops/action-gh-release@v2.0.8
-        with:
-          files: |
-            **/!(*opi5*).xz
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+apt-get --yes --quiet autoremove
+
+after=$(df --output=used / | tail -n1)
+freed=$(( before - after ))
+
+echo "Freed up $freed KiB"
+
+# run Photonvision install script
+chmod +x ./install.sh
+./install.sh --install-nm=yes --arch=aarch64
+
+echo "Installing additional things"
+apt-get install --yes --quiet libc6 libstdc++6
+
+# let netplan create the config during cloud-init
+rm -f /etc/netplan/00-default-nm-renderer.yaml
+
+# set NetworkManager as the renderer in cloud-init
+cp -f ./OPi5_CIDATA/network-config /boot/network-config
+
+# add customized user-data file for cloud-init
+cp -f ./OPi5_CIDATA/user-data /boot/user-data
+
+# modify photonvision.service to enable big cores
+sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
+cp -f /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
+chmod 644 /etc/systemd/system/photonvision.service
+cat /etc/systemd/system/photonvision.service
+
+# networkd isn't being used, this causes an unnecessary delay
+systemctl disable systemd-networkd-wait-online.service
+
+# PhotonVision server is managing the network, so it doesn't need to wait for online
+systemctl disable NetworkManager-wait-online.service
+
+# the bluetooth service isn't needed and causes problems with cloud-init
+# the chip has different names on different boards. Examples are:
+#   OrangePi5: ap6275p-bluetooth.service
+#   OrangePi5pro: ap6256s-bluetooth.service
+#   OrangePi5b: ap6275p-bluetooth.service
+#   OrangePi5max: ap6611s-bluetooth.service
+# instead of keeping a catalog of these services, find them based on a pattern and mask them
+btservices=$(systemctl list-unit-files *bluetooth.service | tail -n +2 | head -n -1 | awk '{print $1}')
+for btservice in $btservices; do
+    echo "Masking: $btservice"
+    systemctl mask "$btservice"
+done
+
+rm -rf /var/lib/apt/lists/*
+apt-get --yes --quiet clean
+
+rm -rf /usr/share/doc
+rm -rf /usr/share/locale/
