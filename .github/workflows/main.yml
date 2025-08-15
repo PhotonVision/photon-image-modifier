@@ -64,10 +64,7 @@ jobs:
         # Create a larger image file (add 3800MB)
         dd if=/dev/zero bs=1M count=3800 >> rubikpi3.img
         
-        # Setup loop device with custom offset
-        sudo losetup -P /dev/loop0 rubikpi3.img
-        
-        # Mount with custom offset as specified
+        # Mount with custom offset as specified (let mount create the loop device)
         mkdir -p ./rootfs
         sudo mount -o loop,offset=$((4096*139008)) rubikpi3.img ./rootfs
         
@@ -101,7 +98,6 @@ jobs:
         sudo umount rootfs/sys || true
         sudo umount rootfs/proc || true
         sudo umount rootfs || true
-        sudo losetup -d /dev/loop0 || true
         
         # Set output for later steps
         echo "image=rubikpi3.img" >> $GITHUB_OUTPUT
