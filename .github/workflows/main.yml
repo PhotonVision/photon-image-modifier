@@ -37,15 +37,30 @@ jobs:
     - name: Fetch tags
       run: git fetch --tags --force
 
+    - name: Prepare base image for rubikpi3 (if needed)
+      if: matrix.name == 'rubikpi3'
+      run: |
+        # Download and extract the base image if it's compressed
+        wget -O base_image.xz "${{ matrix.base_image }}"
+        xz -d base_image.xz
+        mv base_image ubuntu-24.04-preinstalled-desktop-arm64-rubikpi3.img
+        echo "Base image prepared for mounting"
+
     - uses: pguyot/arm-runner-action@HEAD
       id: install_deps
       with:
-        image_additional_mb: 3500
+        image_additional_mb: 3800
         bind_mount_repository: true
         base_image: ${{ matrix.base_image }}
         commands: |
           chmod +x ${{matrix.script}}
           ${{ matrix.script }}
+          # Mount the base image for rubikpi3 to access rootfs
+          if [ "${{ matrix.name }}" = "rubikpi3" ]; then
+            mkdir -p ./rootfs
+            sudo mount -o loop,offset=$((4096*139008)) ubuntu-24.04-preinstalled-desktop-arm64-rubikpi3.img ./rootfs
+            echo "Base image mounted at ./rootfs"
+          fi
           chmod +x ./install_common.sh
           ./install_common.sh
           mkdir -p /opt/photonvision/
@@ -53,6 +68,11 @@ jobs:
 
     - name: Compress built image
       run: |
+        # Unmount if mounted
+        if mountpoint -q ./rootfs; then
+          sudo umount ./rootfs
+          rmdir ./rootfs
+        fi
         mv ${{ steps.install_deps.outputs.image }} photonvision_${{ matrix.name }}.img
         sudo xz -T 0 -v photonvision_${{ matrix.name }}.img
 
