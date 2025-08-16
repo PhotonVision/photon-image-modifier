@@ -55,7 +55,7 @@ jobs:
         
         # Install required packages
         sudo apt-get update
-        sudo apt-get install -y qemu-user-static wget xz-utils
+        sudo apt-get install -y qemu-user-static wget xz-utils rsync
         
         # Download and extract the image
         wget -O rubikpi3.img.xz "${{ matrix.base_image }}"
@@ -78,8 +78,9 @@ jobs:
         sudo cp /usr/bin/qemu-arm-static rootfs/usr/bin/ || true
         sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/ || true
         
-        # Copy repository into chroot
-        sudo cp -r . rootfs/tmp/build/
+        # Copy repository into chroot (excluding mounted directories and problematic files)
+        sudo mkdir -p rootfs/tmp/build/
+        sudo rsync -av --exclude=rootfs --exclude=.git --exclude=*.img --exclude=*.xz . rootfs/tmp/build/
         
         # Run the installation scripts in chroot
         sudo chroot rootfs /bin/bash -c "
