@@ -7,6 +7,10 @@ on:
   pull_request:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -51,7 +55,7 @@ jobs:
           - name: rock5c
             script: ./install_opi5.sh
             base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-rock-5c.img.xz
-            
+
     name: "Build for ${{ matrix.name }}"
 
     steps:
