@@ -1,6 +1,5 @@
-# Automatically load overlays for detected DSI displays/cameras
+# Automatically load overlays for detected DSI displays
 display_auto_detect=1
-camera_auto_detect=1
 
 # Automatically load initramfs files, if found
 auto_initramfs=1
