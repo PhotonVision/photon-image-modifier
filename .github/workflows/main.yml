@@ -15,12 +15,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: opi5
-            script: ./install_opi5.sh
-            base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5.img.xz
           - name: rubikpi3
             script: ./install_rubikpi3.sh
-            base_image: "https://testisdfasdfasdf.s3.us-east-2.amazonaws.com/ubuntu-24.04-preinstalled-desktop-arm64-rubikpi3.img.xz"
+            base_image: "https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x00/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20250912-127.yaml"
                         
     name: "Build for ${{ matrix.name }}"
 
@@ -31,74 +28,43 @@ jobs:
     - name: Fetch tags
       run: git fetch --tags --force
 
-    - name: Build with ARM runner (non-rubikpi3)
-      uses: pguyot/arm-runner-action@HEAD
-      id: install_deps
-      if: matrix.name != 'rubikpi3'
-      with:
-        image_additional_mb: 3800
-        bind_mount_repository: true
-        base_image: ${{ matrix.base_image }}
-        use_systemd_nspawn: false
-        commands: |
-          chmod +x ${{matrix.script}}
-          ${{ matrix.script }}
-          chmod +x ./install_common.sh
-          ./install_common.sh
-          mkdir -p /opt/photonvision/
-          echo "${{ github.ref_name }};${{ matrix.name }}" > /opt/photonvision/image-version
-
-    - name: Build rubikpi3 with custom mounting
+    - name: Build rubikpi3 using YAML manifest
       if: matrix.name == 'rubikpi3'
       run: |
         set -ex
-        
-        # Install required packages
         sudo apt-get update
-        sudo apt-get install -y qemu-user-static wget xz-utils rsync
+        sudo apt-get install -y yq wget xz-utils rsync
         
-        # Download and extract the image
-        wget -O rubikpi3.img.xz "${{ matrix.base_image }}"
-        xz -d rubikpi3.img.xz
+        # Download and process manifest
+        wget -O manifest.yaml "${{ matrix.base_image }}"
         
-        # Create a larger image file (add 3800MB)
+        # Process each component
+        yq e '.urls[]' manifest.yaml | while read -r entry; do
+          url=$(echo "$entry" | yq e '.url' - | tr -d '[:space:]')
+          sha=$(echo "$entry" | yq e '.sha256sum' -)
+          content=$(echo "$entry" | yq e '.content' -)
+          
+          wget -O "$content" "$url"
+          echo "$sha  $content" | sha256sum -c -
+          
+          # Handle .gz → .xz conversion
+          if [[ "$content" == *.gz ]]; then
+            mv "$content" "${content%.gz}.xz"
+          fi
+        done
+        
+        # Assembly process
+        mkdir -p QLI
+        unxz *.xz
+        tar xvf *.tar -C QLI
+        rm *.tar
+        mv rawprogram*.xml QLI/
+        mv dtb.bin QLI/
+        mv ubuntu*.img QLI/
+        
+        # Final image preparation
+        cp QLI/ubuntu*.img rubikpi3.img
         dd if=/dev/zero bs=1M count=3800 >> rubikpi3.img
-        
-        # Mount with custom offset as specified (let mount create the loop device)
-        mkdir -p ./rootfs
-        sudo mount -o loop,offset=$((4096*139008)) rubikpi3.img ./rootfs
-        
-        # Setup chroot environment
-        sudo mount -t proc proc rootfs/proc
-        sudo mount -t sysfs sysfs rootfs/sys
-        sudo mount -t tmpfs tmpfs rootfs/run
-        sudo mount --bind /dev rootfs/dev
-        
-        # Copy qemu static binaries for emulation
-        sudo cp /usr/bin/qemu-arm-static rootfs/usr/bin/ || true
-        sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/ || true
-        
-        # Copy repository into chroot (excluding mounted directories and problematic files)
-        sudo mkdir -p rootfs/tmp/build/
-        sudo rsync -av --exclude=rootfs --exclude=.git --exclude=*.img --exclude=*.xz . rootfs/tmp/build/
-        
-        # Run the installation scripts in chroot
-        sudo chroot rootfs /bin/bash -c "
-          cd /tmp/build
-          chmod +x ${{ matrix.script }}
-          ./${{ matrix.script }}
-          chmod +x ./install_common.sh
-          ./install_common.sh
-          mkdir -p /opt/photonvision/
-          echo '${{ github.ref_name }};${{ matrix.name }}' > /opt/photonvision/image-version
-        "
-        
-        # Cleanup mounts
-        sudo umount rootfs/dev || true
-        sudo umount rootfs/run || true
-        sudo umount rootfs/sys || true
-        sudo umount rootfs/proc || true
-        sudo umount rootfs || true
         
         # Set output for later steps
         echo "image=rubikpi3.img" >> $GITHUB_OUTPUT
@@ -112,14 +78,8 @@ jobs:
           rmdir ./rootfs
         fi
         
-        # Handle different image sources
-        if [ "${{ matrix.name }}" = "rubikpi3" ]; then
-          # Use the custom built image
-          mv ${{ steps.install_deps_rubikpi3.outputs.image }} photonvision_${{ matrix.name }}.img
-        else
-          # Use the ARM runner output
-          mv ${{ steps.install_deps.outputs.image }} photonvision_${{ matrix.name }}.img
-        fi
+        # Use the custom built image
+        mv ${{ steps.install_deps_rubikpi3.outputs.image }} photonvision_${{ matrix.name }}.img
         
         sudo xz -T 0 -v photonvision_${{ matrix.name }}.img
 
