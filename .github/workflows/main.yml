@@ -67,31 +67,18 @@ jobs:
         mv dtb.bin QLI/ 2>/dev/null || true
         mv *.img QLI/ 2>/dev/null || true
         
-        # Final image preparation
-        cp QLI/ubuntu*.img rubikpi3.img
-        dd if=/dev/zero bs=1M count=3800 >> rubikpi3.img
         
-        # Set output for later steps
-        echo "image=rubikpi3.img" >> $GITHUB_OUTPUT
       id: install_deps_rubikpi3
 
-    - name: Compress built image
-      run: |
-        # Unmount if mounted (cleanup from custom rubikpi3 build)
-        if mountpoint -q ./rootfs; then
-          sudo umount ./rootfs
-          rmdir ./rootfs
-        fi
-        
-        # Use the custom built image
-        mv ${{ steps.install_deps_rubikpi3.outputs.image }} photonvision_${{ matrix.name }}.img
-        
-        sudo xz -T 0 -v photonvision_${{ matrix.name }}.img
+    # Image compression step removed as only the QLI directory is needed
 
+    - name: Archive full QLI directory
+      run: |
+        tar -czf photonvision_${{ matrix.name }}_full.tar.gz -C QLI .
     - uses: actions/upload-artifact@v4.3.4
       with:
-        name: photonvision_${{ matrix.name }}.img.xz
-        path: photonvision_${{ matrix.name }}.img.xz
+        name: photonvision_${{ matrix.name }}_full
+        path: photonvision_${{ matrix.name }}_full.tar.gz
         if-no-files-found: error
         retention-days: 1
 
