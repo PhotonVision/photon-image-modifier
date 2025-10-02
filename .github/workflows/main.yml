@@ -40,25 +40,25 @@ jobs:
         
         # Process each component
         yq eval -r '.urls[] | "\(.url) \(.sha256sum)"' manifest.yaml | while read -r url sha; do
-          content=$(basename "$url")
-          wget -O "$content" "$url"
-          echo "$sha  $content" | sha256sum -c -
+          filename=$(basename "$url")
+          wget -O "$filename" "$url"
+          echo "$sha  $filename" | sha256sum -c -
         done
         
         # Assembly process
         mkdir -p QLI
-        # Extract .xz files (e.g., image)
+        # Extract .xz image(s)
         if ls *.xz 1>/dev/null 2>&1; then
-          unxz *.xz
+          for f in *.xz; do unxz "$f"; done
         fi
-        # Extract .tar.gz archives
+        # Extract .tar.gz archive(s) directly into QLI
         if ls *.tar.gz 1>/dev/null 2>&1; then
-          tar -xzf *.tar.gz
+          tar -xzf *.tar.gz -C QLI
         fi
-        # Move relevant files into QLI directory
-        mv rawprogram*.xml QLI/ || true
-        mv dtb.bin QLI/ || true
-        mv ubuntu*.img QLI/ || true
+        # Move any remaining files (rawprogram, dtb, img) into QLI
+        mv rawprogram*.xml QLI/ 2>/dev/null || true
+        mv dtb.bin QLI/ 2>/dev/null || true
+        mv *.img QLI/ 2>/dev/null || true
         
         # Final image preparation
         cp QLI/ubuntu*.img rubikpi3.img
