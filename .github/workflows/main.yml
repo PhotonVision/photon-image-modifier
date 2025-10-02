@@ -38,8 +38,8 @@ jobs:
         # Download and process manifest
         wget -O manifest.yaml "${{ matrix.base_image }}"
         
-        # Process each component
-        yq eval -r '.urls[] | "\(.url) \(.sha256sum)"' manifest.yaml | while read -r url sha; do
+        # Process each component using yq with proper quoting
+        yq eval -r ".urls[] | .url + \" \" + .sha256sum" manifest.yaml | while read -r url sha; do
           filename=$(basename "$url")
           wget -O "$filename" "$url"
           echo "$sha  $filename" | sha256sum -c -
