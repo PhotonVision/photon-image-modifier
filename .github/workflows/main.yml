@@ -39,28 +39,26 @@ jobs:
         wget -O manifest.yaml "${{ matrix.base_image }}"
         
         # Process each component
-        yq e '.urls[]' manifest.yaml | while read -r entry; do
-          url=$(echo "$entry" | yq e '.url' - | tr -d '[:space:]')
-          sha=$(echo "$entry" | yq e '.sha256sum' -)
-          content=$(echo "$entry" | yq e '.content' -)
-          
+        yq eval -r '.urls[] | "\(.url) \(.sha256sum)"' manifest.yaml | while read -r url sha; do
+          content=$(basename "$url")
           wget -O "$content" "$url"
           echo "$sha  $content" | sha256sum -c -
-          
-          # Handle .gz → .xz conversion
-          if [[ "$content" == *.gz ]]; then
-            mv "$content" "${content%.gz}.xz"
-          fi
         done
         
         # Assembly process
         mkdir -p QLI
-        unxz *.xz
-        tar xvf *.tar -C QLI
-        rm *.tar
-        mv rawprogram*.xml QLI/
-        mv dtb.bin QLI/
-        mv ubuntu*.img QLI/
+        # Extract .xz files (e.g., image)
+        if ls *.xz 1>/dev/null 2>&1; then
+          unxz *.xz
+        fi
+        # Extract .tar.gz archives
+        if ls *.tar.gz 1>/dev/null 2>&1; then
+          tar -xzf *.tar.gz
+        fi
+        # Move relevant files into QLI directory
+        mv rawprogram*.xml QLI/ || true
+        mv dtb.bin QLI/ || true
+        mv ubuntu*.img QLI/ || true
         
         # Final image preparation
         cp QLI/ubuntu*.img rubikpi3.img
