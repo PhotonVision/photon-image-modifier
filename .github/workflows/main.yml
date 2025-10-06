@@ -103,28 +103,46 @@ jobs:
         # Check if this is a raw filesystem or a partitioned disk image
         echo "=== Analyzing image structure ==="
         sudo fdisk -l "$ROOTFS_IMG" || true
-        sudo parted "$ROOTFS_IMG" print || true
+        sudo parted "$ROOTFS_IMG" unit s print || true
         
-        # Try to detect if this is a raw filesystem (no partition table)
-        if ! sudo fdisk -l "$ROOTFS_IMG" 2>&1 | grep -q "^Device"; then
-          echo "=== Image appears to be a raw filesystem (no partition table) ==="
-          echo "Attempting direct mount without offset..."
+        # Check if there are actual partitions defined (not just a GPT header)
+        PARTITION_COUNT=$(sudo parted "$ROOTFS_IMG" print 2>/dev/null | grep "^[[:space:]]*[0-9]" | wc -l)
+        echo "Detected $PARTITION_COUNT partition(s)"
+        
+        if [ "$PARTITION_COUNT" -eq 0 ]; then
+          echo "=== Image has no partitions - treating as raw filesystem ==="
           
+          # Try to mount directly first to confirm it's a filesystem
           mkdir -p ./rootfs
           if sudo mount -o loop "$ROOTFS_IMG" ./rootfs 2>/dev/null; then
-            echo "Successfully mounted raw filesystem"
+            echo "Successfully mounted as raw ext4 filesystem"
+            
+            # Unmount to expand the image
+            sudo umount ./rootfs
+            
+            # Expand the raw filesystem image
+            echo "Expanding raw filesystem image by 3800MB..."
+            dd if=/dev/zero bs=1M count=3800 >> "$ROOTFS_IMG"
+            
+            # Resize the filesystem to use the new space
+            echo "Resizing ext4 filesystem..."
+            sudo e2fsck -f -y "$ROOTFS_IMG" || true
+            sudo resize2fs "$ROOTFS_IMG"
+            
+            # Remount the expanded filesystem
+            sudo mount -o loop "$ROOTFS_IMG" ./rootfs
             MOUNTED=true
           else
-            echo "Failed to mount as raw filesystem, will try partition detection"
-            MOUNTED=false
+            echo "Error: Image has no partitions and cannot be mounted as raw filesystem"
+            echo "Trying to detect filesystem type..."
+            file "$ROOTFS_IMG"
+            sudo blkid "$ROOTFS_IMG" || true
+            exit 1
           fi
         else
+          echo "=== Image has partitions - treating as partitioned disk ==="
           MOUNTED=false
-        fi
-        
-        if [ "$MOUNTED" = false ]; then
-          echo "=== Treating as partitioned disk image ==="
-        
+          
           # Create a larger image file (add 3800MB for PhotonVision and dependencies)
           dd if=/dev/zero bs=1M count=3800 >> "$ROOTFS_IMG"
           
@@ -216,6 +234,7 @@ jobs:
           # Resize the filesystem to use the newly added space
           echo "Resizing filesystem to use expanded space..."
           sudo resize2fs $(sudo losetup -j "$ROOTFS_IMG" | cut -d: -f1) || echo "Warning: resize2fs failed, filesystem may not use full space"
+          MOUNTED=true
         fi
         
         # Setup chroot environment
