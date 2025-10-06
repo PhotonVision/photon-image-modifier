@@ -4,9 +4,9 @@
 set -ex
 
 # First update the APT
-sudo apt-get update
+sudo apt-get update -y
 
-sudo apt-get install git net-tools lrzsz gdbserver unzip selinux-utils
+sudo apt-get install -y git net-tools lrzsz gdbserver unzip selinux-utils
 
 sudo git clone -b ubuntu_setup --single-branch https://github.com/rubikpi-ai/rubikpi-script.git 
 cd rubikpi-script  
@@ -25,7 +25,6 @@ chmod +x ./install.sh
 # Enable ssh/pigpiod
 systemctl enable ssh
 systemctl enable pigpiod
-
 
 
 # Remove extra packages too

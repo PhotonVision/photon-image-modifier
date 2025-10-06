@@ -159,6 +159,11 @@ jobs:
         sudo mount -t tmpfs tmpfs rootfs/run
         sudo mount --bind /dev rootfs/dev
         
+        # Setup DNS resolution in chroot
+        echo "=== Setting up DNS in chroot ==="
+        sudo cp /etc/resolv.conf rootfs/etc/resolv.conf
+        sudo cp /etc/hosts rootfs/etc/hosts
+        
         # Copy qemu static binaries for ARM emulation
         sudo cp /usr/bin/qemu-arm-static rootfs/usr/bin/ || true
         sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/ || true
@@ -169,12 +174,13 @@ jobs:
         
         # Install sudo in the chroot environment (needed by install scripts)
         echo "=== Installing sudo in chroot ==="
-        sudo chroot rootfs /usr/bin/qemu-aarch64-static /bin/bash -c "set -exv && apt-get update && apt-get install -y sudo"
+        sudo chroot rootfs /usr/bin/qemu-aarch64-static /bin/bash -c "set -exv && DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y sudo"
         
         # Run the installation scripts in chroot with verbose output
         echo "=== Running installation scripts in chroot ==="
         sudo chroot rootfs /usr/bin/qemu-aarch64-static /bin/bash -c "
           set -exv
+          export DEBIAN_FRONTEND=noninteractive
           cd /tmp/build
           echo '=== Current directory: \$(pwd) ==='
           echo '=== Files in current directory: ==='
