@@ -92,33 +92,44 @@ jobs:
         echo "Detecting partition layout..."
         sudo fdisk -l "$ROOTFS_IMG"
         
-                # Use fdisk to extract partition information directly
-        # For GPT partitions, look for lines that start with the image name
-        echo "Analyzing partitions with fdisk..."
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                # Use sfdisk for more reliable partition detection (works better with GPT)
+        echo "Analyzing partitions with sfdisk..."
         
-        # Get all partition lines from fdisk output
-        # GPT format shows partitions without the image name prefix in some versions
-        # Look for lines with partition info (they contain numbers in specific columns)
-        PARTITION_LINE=$(sudo fdisk -l "$ROOTFS_IMG" | awk '/^[^ ].*[0-9]+[[:space:]]+[0-9]+[[:space:]]+[0-9]+/ {print}' | grep -v "Disk" | tail -n1)
+        # sfdisk provides machine-readable output
+        # Format: device : start= X, size= Y, type= Z
+        echo "Running: sudo sfdisk -d $ROOTFS_IMG"
+        sudo sfdisk -d "$ROOTFS_IMG" 2>&1 | tee /tmp/sfdisk_output.txt
+        PARTITION_INFO=$(grep "start=" /tmp/sfdisk_output.txt | tail -n1)
         
-        if [ -z "$PARTITION_LINE" ]; then
-          echo "Error: Could not find any partition in fdisk output"
-          echo "Full fdisk output:"
-          sudo fdisk -l "$ROOTFS_IMG"
-          exit 1
-        fi
-        
-        echo "Selected partition line: $PARTITION_LINE"
-        
-        # Extract start sector from fdisk output
-        # For GPT, the format is: Device Start End Sectors Size Type
-        # We need to find which column has the start sector (should be numeric)
-        START_SECTOR=$(echo "$PARTITION_LINE" | awk '{for(i=1;i<=NF;i++) if($i ~ /^[0-9]+$/ && $i > 100) {print $i; exit}}')
-        
-        if [ -z "$START_SECTOR" ]; then
-          echo "Trying alternative parsing method..."
-          # Alternative: just get the second field if it's numeric
-          START_SECTOR=$(echo "$PARTITION_LINE" | awk '{print $2}')
+        if [ -z "$PARTITION_INFO" ]; then
+          echo "sfdisk failed or no partitions found, trying parted..."
+          # Fallback to parted
+          echo "Running: sudo parted $ROOTFS_IMG unit s print"
+          sudo parted "$ROOTFS_IMG" unit s print 2>&1 | tee /tmp/parted_output.txt
+          # Get the last partition (usually the rootfs)
+          START_SECTOR=$(grep "^[[:space:]]*[0-9]" /tmp/parted_output.txt | tail -n1 | awk '{print $2}' | sed 's/s$//')
+          echo "Extracted start sector from parted: $START_SECTOR"
+        else
+          echo "Partition info from sfdisk: $PARTITION_INFO"
+          # Extract start sector from sfdisk output
+          START_SECTOR=$(echo "$PARTITION_INFO" | sed -n 's/.*start=[[:space:]]*\([0-9]*\).*/\1/p')
+          echo "Extracted start sector from sfdisk: $START_SECTOR"
         fi
         
         # Get sector size from fdisk output (typically 512 bytes)
@@ -130,10 +141,20 @@ jobs:
           echo "Warning: Could not detect sector size, defaulting to 512 bytes"
         fi
         
-        if [ -z "$START_SECTOR" ]; then
-          echo "Error: Could not detect partition start sector"
+
+
+
+
+
+                if [ -z "$START_SECTOR" ] || [ "$START_SECTOR" = "0" ]; then
+          echo "Error: Could not detect partition start sector or invalid sector detected"
+          echo "START_SECTOR value: '$START_SECTOR'"
           echo "Full fdisk output:"
           sudo fdisk -l "$ROOTFS_IMG"
+          echo "Full sfdisk output:"
+          cat /tmp/sfdisk_output.txt 2>/dev/null || echo "No sfdisk output available"
+          echo "Full parted output:"
+          cat /tmp/parted_output.txt 2>/dev/null || echo "No parted output available"
           exit 1
         fi
         
