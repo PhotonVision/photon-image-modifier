@@ -92,25 +92,33 @@ jobs:
         echo "Detecting partition layout..."
         sudo fdisk -l "$ROOTFS_IMG"
         
-        # Use fdisk to extract partition information directly
-        # Find the largest Linux filesystem partition (not EFI, not protective MBR)
+                # Use fdisk to extract partition information directly
+        # For GPT partitions, look for lines that start with the image name
         echo "Analyzing partitions with fdisk..."
-        PARTITION_LINE=$(sudo fdisk -l "$ROOTFS_IMG" | grep "^${ROOTFS_IMG}" | grep -i "linux" | tail -n1)
+        
+        # Get all partition lines from fdisk output
+        # GPT format shows partitions without the image name prefix in some versions
+        # Look for lines with partition info (they contain numbers in specific columns)
+        PARTITION_LINE=$(sudo fdisk -l "$ROOTFS_IMG" | awk '/^[^ ].*[0-9]+[[:space:]]+[0-9]+[[:space:]]+[0-9]+/ {print}' | grep -v "Disk" | tail -n1)
         
         if [ -z "$PARTITION_LINE" ]; then
-          echo "No Linux partition found, trying without filter..."
-          PARTITION_LINE=$(sudo fdisk -l "$ROOTFS_IMG" | grep "^${ROOTFS_IMG}" | grep -v "EFI" | tail -n1)
+          echo "Error: Could not find any partition in fdisk output"
+          echo "Full fdisk output:"
+          sudo fdisk -l "$ROOTFS_IMG"
+          exit 1
         fi
         
         echo "Selected partition line: $PARTITION_LINE"
         
         # Extract start sector from fdisk output
-        # fdisk output format: Device Boot Start End Sectors Size Id Type
-        START_SECTOR=$(echo "$PARTITION_LINE" | awk '{print $2}')
+        # For GPT, the format is: Device Start End Sectors Size Type
+        # We need to find which column has the start sector (should be numeric)
+        START_SECTOR=$(echo "$PARTITION_LINE" | awk '{for(i=1;i<=NF;i++) if($i ~ /^[0-9]+$/ && $i > 100) {print $i; exit}}')
         
-        # If START_SECTOR contains a *, it's the boot flag, so use $3 instead
-        if [[ "$START_SECTOR" == "*" ]]; then
-          START_SECTOR=$(echo "$PARTITION_LINE" | awk '{print $3}')
+        if [ -z "$START_SECTOR" ]; then
+          echo "Trying alternative parsing method..."
+          # Alternative: just get the second field if it's numeric
+          START_SECTOR=$(echo "$PARTITION_LINE" | awk '{print $2}')
         fi
         
         # Get sector size from fdisk output (typically 512 bytes)
