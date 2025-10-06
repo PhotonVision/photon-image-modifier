@@ -100,139 +100,57 @@ jobs:
         
         echo "Using rootfs image: $ROOTFS_IMG"
         
-        # Check if this is a raw filesystem or a partitioned disk image
-        echo "=== Analyzing image structure ==="
-        sudo fdisk -l "$ROOTFS_IMG" || true
-        file "$ROOTFS_IMG"
-        sudo blkid "$ROOTFS_IMG" || true
-        
-        # Fix PMBR size mismatch if present
-        echo "=== Fixing PMBR size mismatch ==="
-        echo "w" | sudo fdisk "$ROOTFS_IMG" || true
-        
-        echo "=== After PMBR fix ==="
-        sudo fdisk -l "$ROOTFS_IMG"
-        
-        # Rebuild GPT from protective MBR
-        echo "=== Rebuilding GPT from protective MBR ==="
-        echo -e "r\nb\nw\ny" | sudo gdisk "$ROOTFS_IMG" || true
-        
-        echo "=== After GPT rebuild ==="
-        sudo fdisk -l "$ROOTFS_IMG"
-        sudo parted "$ROOTFS_IMG" print || true
-        
-        # Use losetup to create a loop device for proper partition detection
-        echo "=== Creating loop device ==="
-        LOOP_DEV=$(sudo losetup -f --show -P "$ROOTFS_IMG")
-        echo "Loop device created: $LOOP_DEV"
-        
-        # Force kernel to re-read partition table
-        sudo partprobe "$LOOP_DEV" 2>/dev/null || true
-        sleep 2
-        
-        # List partition devices
-        echo "=== Partition devices ==="
-        ls -la ${LOOP_DEV}* || true
-        
-        # Check if there are partition devices
-        PARTITION_DEVS=$(ls ${LOOP_DEV}p* 2>/dev/null | wc -l)
-        echo "Found $PARTITION_DEVS partition device(s)"
-        
+        # Mount using the method from rpiimager/inflate.sh
+        # This uses a fixed offset for Ubuntu preinstalled server images
+        echo "=== Mounting rootfs with fixed offset (rpiimager method) ==="
         mkdir -p ./rootfs
         
-        if [ "$PARTITION_DEVS" -gt 0 ]; then
-          echo "=== Mounting partition device ==="
-          ROOTFS_PART=$(ls ${LOOP_DEV}p* 2>/dev/null | tail -n1)
-          echo "Using partition: $ROOTFS_PART"
-          
-          if sudo mount "$ROOTFS_PART" ./rootfs; then
-            echo "Successfully mounted partition"
-            MOUNT_TYPE="partition"
-          else
-            echo "Failed to mount partition, trying offset method"
-            MOUNT_TYPE="none"
-          fi
-        else
-          echo "=== No partition devices, trying direct loop mount ==="
-          if sudo mount "$LOOP_DEV" ./rootfs 2>/dev/null; then
-            echo "Successfully mounted loop device directly"
-            MOUNT_TYPE="loop"
-          else
-            echo "Failed to mount loop device, trying offset method"
-            MOUNT_TYPE="none"
-          fi
+        # Calculate offset: 4096 bytes/sector * 139008 sectors = 569,376,768 bytes
+        OFFSET=$((4096*139008))
+        echo "Using offset: $OFFSET bytes (sector 139008)"
+        
+        sudo mount -o rw,loop,offset=$OFFSET "$ROOTFS_IMG" ./rootfs
+        
+        if [ $? -ne 0 ]; then
+          echo "Error: Failed to mount image with fixed offset"
+          exit 1
         fi
         
-        # Fallback: try mounting with offset from MBR
-        if [ "$MOUNT_TYPE" = "none" ]; then
-          echo "=== Trying offset mount from MBR partition entry ==="
-          sudo losetup -d "$LOOP_DEV"
-          
-          START_SECTOR=$(sudo fdisk -l "$ROOTFS_IMG" | grep "^${ROOTFS_IMG}1" | awk '{print $2}')
-          if [ -n "$START_SECTOR" ]; then
-            OFFSET=$((START_SECTOR * 512))
-            echo "Start sector: $START_SECTOR, Offset: $OFFSET bytes"
-            
-            if sudo mount -o loop,offset=$OFFSET "$ROOTFS_IMG" ./rootfs; then
-              echo "Successfully mounted with offset"
-              MOUNT_TYPE="offset"
-              # Create a new loop device for the offset mount
-              LOOP_DEV=$(sudo losetup -j "$ROOTFS_IMG" | cut -d: -f1)
-            else
-              echo "Error: All mount attempts failed"
-              exit 1
-            fi
-          else
-            echo "Error: Could not determine partition offset"
-            exit 1
-          fi
-        fi
-        
-        echo "=== Mount successful, type: $MOUNT_TYPE ==="
+        echo "=== Mount successful ==="
         ls -la ./rootfs | head -20
         
-        # Now expand the image
-        echo "=== Unmounting for expansion ==="
-        sudo umount ./rootfs
-        if [ -n "$LOOP_DEV" ]; then
-          sudo losetup -d "$LOOP_DEV" 2>/dev/null || true
+        # Check if this is a Canonical or Modified image (from rpiimager logic)
+        if [ -f "rootfs/etc/ImgType" ]; then
+          cp rootfs/etc/ImgType ImgType
+        else
+          echo "Canonical" > ImgType
+        fi
+        read ImgType < ImgType
+        echo "Image type: $ImgType"
+        
+        # Expand image if it's a Canonical image (first time modification)
+        if [ "$ImgType" == "Canonical" ]; then
+          echo "=== Marking image as CustomIDE ==="
+          sudo chroot rootfs /bin/bash -c "
+            touch /etc/ImgType
+            echo 'CustomIDE' > /etc/ImgType
+          "
+          
+          echo "=== Unmounting for expansion ==="
+          sudo umount ./rootfs
+          
+          # Expand the image by 10GB (as per rpiimager method)
+          echo "=== Expanding image by 10GB ==="
+          dd if=/dev/zero bs=1M count=10240 >> "$ROOTFS_IMG"
+          
+          # Remount after expansion
+          echo "=== Remounting after expansion ==="
+          sudo mount -o rw,loop,offset=$OFFSET "$ROOTFS_IMG" ./rootfs
+        elif [ "$ImgType" == "CustomIDE" ]; then
+          echo "Image already customized, no expansion needed"
         fi
         
-        # Expand the image
-        echo "=== Expanding image by 3800MB ==="
-        dd if=/dev/zero bs=1M count=3800 >> "$ROOTFS_IMG"
-        
-        # Fix partition table after expansion
-        if [ "$MOUNT_TYPE" = "partition" ] || [ "$MOUNT_TYPE" = "offset" ]; then
-          echo "=== Fixing partition table after expansion ==="
-          echo "w" | sudo fdisk "$ROOTFS_IMG" || true
-          echo -e "r\nb\nw\ny" | sudo gdisk "$ROOTFS_IMG" || true
-        fi
-        
-        # Remount based on original mount type
-        echo "=== Remounting after expansion ==="
-        if [ "$MOUNT_TYPE" = "partition" ]; then
-          LOOP_DEV=$(sudo losetup -f --show -P "$ROOTFS_IMG")
-          sudo partprobe "$LOOP_DEV" 2>/dev/null || true
-          sleep 2
-          ROOTFS_PART=$(ls ${LOOP_DEV}p* 2>/dev/null | tail -n1)
-          sudo mount "$ROOTFS_PART" ./rootfs
-          echo "Resizing filesystem on partition..."
-          sudo resize2fs "$ROOTFS_PART" || echo "Warning: resize2fs failed"
-        elif [ "$MOUNT_TYPE" = "loop" ]; then
-          LOOP_DEV=$(sudo losetup -f --show "$ROOTFS_IMG")
-          sudo mount "$LOOP_DEV" ./rootfs
-          echo "Resizing filesystem..."
-          sudo e2fsck -f -y "$ROOTFS_IMG" || true
-          sudo resize2fs "$ROOTFS_IMG"
-        elif [ "$MOUNT_TYPE" = "offset" ]; then
-          START_SECTOR=$(sudo fdisk -l "$ROOTFS_IMG" | grep "^${ROOTFS_IMG}1" | awk '{print $2}')
-          OFFSET=$((START_SECTOR * 512))
-          sudo mount -o loop,offset=$OFFSET "$ROOTFS_IMG" ./rootfs
-          LOOP_DEV=$(sudo losetup -j "$ROOTFS_IMG" | cut -d: -f1)
-          echo "Resizing filesystem with offset..."
-          sudo resize2fs "$LOOP_DEV" || echo "Warning: resize2fs failed"
-        fi
+        rm -f ImgType
         
         echo "=== Filesystem ready ==="
         
