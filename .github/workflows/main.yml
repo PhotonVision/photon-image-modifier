@@ -28,17 +28,28 @@ jobs:
     - name: Fetch tags
       run: git fetch --tags --force
 
-    - name: Build rubikpi3 using YAML manifest
+    - name: Build rubikpi3 with custom mounting
       if: matrix.name == 'rubikpi3'
       run: |
         set -ex
+        
+        # Install required packages
         sudo apt-get update
-        sudo apt-get install -y yq wget xz-utils rsync
+        sudo apt-get install -y qemu-user-static wget xz-utils rsync yq
         
         # Download and process manifest
         wget -O manifest.yaml "${{ matrix.base_image }}"
         
-        # Process each component using awk to extract URL and SHA256 (robust handling of list prefixes)
+        # Extract the first URL from the manifest (this should be the rootfs image)
+        FIRST_URL=$(awk '/url:/ {sub(/.*url:[[:space:]]*/,"",$0); print $0; exit}' manifest.yaml)
+        ROOTFS_IMG_XZ=$(basename "$FIRST_URL")
+        ROOTFS_IMG="${ROOTFS_IMG_XZ%.xz}"
+        
+        echo "First URL from manifest: $FIRST_URL"
+        echo "Image filename: $ROOTFS_IMG_XZ"
+        echo "Extracted image name: $ROOTFS_IMG"
+        
+        # Process each component using awk to extract URL and SHA256
         awk '/url:/ {
                 sub(/.*url:[[:space:]]*/,"",$0);
                 url=$0
@@ -52,29 +63,127 @@ jobs:
           echo "$sha  $filename" | sha256sum -c -
         done
         
-        # Assembly process
-        mkdir -p QLI
-        # Extract .xz image(s)
-        if ls *.xz 1>/dev/null 2>&1; then
-          for f in *.xz; do unxz "$f"; done
+        # Verify the rootfs image was downloaded
+        if [ ! -f "$ROOTFS_IMG_XZ" ]; then
+          echo "Error: Expected image file $ROOTFS_IMG_XZ not found"
+          echo "Available files:"
+          ls -la *.xz || true
+          exit 1
         fi
+        
+        echo "Extracting rootfs image: $ROOTFS_IMG_XZ"
+        xz -d "$ROOTFS_IMG_XZ"
+        
+        if [ ! -f "$ROOTFS_IMG" ]; then
+          echo "Error: Failed to extract $ROOTFS_IMG"
+          exit 1
+        fi
+        
+        echo "Using rootfs image: $ROOTFS_IMG"
+        
+        # Create a larger image file (add 3800MB for PhotonVision and dependencies)
+        dd if=/dev/zero bs=1M count=3800 >> "$ROOTFS_IMG"
+        
+        # Dynamically detect partition offset
+        echo "Detecting partition layout..."
+        sudo fdisk -l "$ROOTFS_IMG"
+        
+        # Get partition information using sfdisk
+        # Look for the largest partition (typically the rootfs) or the last partition
+        PARTITION_INFO=$(sudo sfdisk -d "$ROOTFS_IMG" | grep "^${ROOTFS_IMG}" | tail -n1)
+        
+        if [ -z "$PARTITION_INFO" ]; then
+          echo "Error: Could not detect partition information"
+          exit 1
+        fi
+        
+        echo "Partition info: $PARTITION_INFO"
+        
+        # Extract start sector and sector size
+        # sfdisk output format: device : start=X, size=Y, type=Z
+        START_SECTOR=$(echo "$PARTITION_INFO" | sed -n 's/.*start=\s*\([0-9]*\).*/\1/p')
+        
+        # Get sector size from fdisk output (typically 512 bytes)
+        SECTOR_SIZE=$(sudo fdisk -l "$ROOTFS_IMG" | grep "^Units:" | awk '{print $(NF-1)}')
+        
+        # Default to 512 if not found
+        if [ -z "$SECTOR_SIZE" ]; then
+          SECTOR_SIZE=512
+          echo "Warning: Could not detect sector size, defaulting to 512 bytes"
+        fi
+        
+        echo "Start sector: $START_SECTOR"
+        echo "Sector size: $SECTOR_SIZE bytes"
+        
+        # Calculate offset in bytes
+        OFFSET=$((START_SECTOR * SECTOR_SIZE))
+        echo "Calculated offset: $OFFSET bytes"
+        
+        # Mount with dynamically calculated offset
+        mkdir -p ./rootfs
+        sudo mount -o loop,offset=$OFFSET "$ROOTFS_IMG" ./rootfs
+        
+        # Resize the filesystem to use the newly added space
+        echo "Resizing filesystem to use expanded space..."
+        sudo resize2fs $(sudo losetup -j "$ROOTFS_IMG" | cut -d: -f1) || echo "Warning: resize2fs failed, filesystem may not use full space"
+        
+        # Setup chroot environment
+        sudo mount -t proc proc rootfs/proc
+        sudo mount -t sysfs sysfs rootfs/sys
+        sudo mount -t tmpfs tmpfs rootfs/run
+        sudo mount --bind /dev rootfs/dev
+        
+        # Copy qemu static binaries for ARM emulation
+        sudo cp /usr/bin/qemu-arm-static rootfs/usr/bin/ || true
+        sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/ || true
+        
+        # Copy repository into chroot (excluding mounted directories and problematic files)
+        sudo mkdir -p rootfs/tmp/build/
+        sudo rsync -av --exclude=rootfs --exclude=.git --exclude=*.img --exclude=*.xz . rootfs/tmp/build/
+        
+        # Run the installation scripts in chroot
+        sudo chroot rootfs /bin/bash -c "
+          cd /tmp/build
+          chmod +x ${{ matrix.script }}
+          ./${{ matrix.script }}
+          chmod +x ./install_common.sh
+          ./install_common.sh
+          mkdir -p /opt/photonvision/
+          echo '${{ github.ref_name }};${{ matrix.name }}' > /opt/photonvision/image-version
+        "
+        
+        # Cleanup mounts
+        sudo umount rootfs/dev || true
+        sudo umount rootfs/run || true
+        sudo umount rootfs/sys || true
+        sudo umount rootfs/proc || true
+        sudo umount rootfs || true
+        
+        # Assembly process for remaining files
+        mkdir -p QLI
         # Extract .tar.gz archive(s) directly into QLI
         if ls *.tar.gz 1>/dev/null 2>&1; then
           tar -xzf *.tar.gz -C QLI
         fi
-        # Move any remaining files (rawprogram, dtb, img) into QLI
+        # Move all files (rawprogram, dtb, img) into QLI
         mv rawprogram*.xml QLI/ 2>/dev/null || true
         mv dtb.bin QLI/ 2>/dev/null || true
         mv *.img QLI/ 2>/dev/null || true
         
+        # Flatten directory structure - move all files from subdirectories to QLI root
+        find QLI -mindepth 2 -type f -exec mv {} QLI/ \;
+        # Remove empty subdirectories
+        find QLI -mindepth 1 -type d -empty -delete
         
+        # Set output for later steps
+        echo "image=$ROOTFS_IMG" >> $GITHUB_OUTPUT
       id: install_deps_rubikpi3
 
     # Image compression step removed as only the QLI directory is needed
 
     - name: Archive full QLI directory
       run: |
-        tar -czf photonvision_${{ matrix.name }}_full.tar.gz -C QLI .
+        tar -cf photonvision_${{ matrix.name }}_full.tar.gz -C QLI .
     - uses: actions/upload-artifact@v4.3.4
       with:
         name: photonvision_${{ matrix.name }}_full
@@ -91,25 +200,18 @@ jobs:
       - run: find
       # Push to dev release
       - uses: pyTooling/Actions/releaser@v1.0.5
+        if: github.event_name == 'push'
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: 'Dev'
           rm: true
           files: |
-            **/*.xz
-        if: github.event_name == 'push'
-      # Upload all xz archives to GH tag if tagged
+            **/*.tar.gz
+      # Upload all tar.gz archives to GH tag if tagged
       - uses: softprops/action-gh-release@v2.0.8
+        if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: |
-            **/*opi5*.xz
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: softprops/action-gh-release@v2.0.8
-        with:
-          files: |
-            **/!(*opi5*).xz
-        if: startsWith(github.ref, 'refs/tags/v')
+            **/*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

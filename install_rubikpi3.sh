@@ -3,25 +3,19 @@
 # Verbose and exit on errors
 set -ex
 
+sudo add-apt-repository ppa:ubuntu-qcom-iot/qcom-noble-ppa
+sudo apt-get install libqnn1
+
 # Run normal photon installer
 chmod +x ./install.sh
 ./install.sh --install-nm=yes --arch=aarch64
 
-# and edit boot partition
-install -m 644 config.txt /boot/
-install -m 644 userconf.txt /boot/
-
-# Kill wifi and other networking things
-install -v -m 644 -D -t /etc/systemd/system/dhcpcd.service.d/ files/wait.conf
-install -v files/rpi-blacklist.conf /etc/modprobe.d/blacklist.conf
-
-# Update pigipio service file to listen locally
-install -v -m 644 files/pigpiod.service /lib/systemd/system/pigpiod.service
-systemctl daemon-reload
 
 # Enable ssh/pigpiod
 systemctl enable ssh
 systemctl enable pigpiod
+
+
 
 # Remove extra packages too
 echo "Purging extra things"
