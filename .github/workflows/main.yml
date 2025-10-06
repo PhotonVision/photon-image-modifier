@@ -161,6 +161,7 @@ jobs:
         
         # Setup DNS resolution in chroot
         echo "=== Setting up DNS in chroot ==="
+        sudo rm -f rootfs/etc/resolv.conf
         sudo cp /etc/resolv.conf rootfs/etc/resolv.conf
         sudo cp /etc/hosts rootfs/etc/hosts
         
