@@ -28,7 +28,7 @@ jobs:
     - name: Fetch tags
       run: git fetch --tags --force
 
-    - name: Build rubikpi3 with custom mounting
+    - name: Build rubikpi3 with mounting
       if: matrix.name == 'rubikpi3'
       run: |
         set -exv
