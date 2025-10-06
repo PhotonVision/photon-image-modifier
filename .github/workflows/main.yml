@@ -103,137 +103,97 @@ jobs:
         # Check if this is a raw filesystem or a partitioned disk image
         echo "=== Analyzing image structure ==="
         sudo fdisk -l "$ROOTFS_IMG" || true
+        
+        # First, try to fix any GPT issues before analyzing
+        echo "Attempting to fix GPT if present..."
+        echo -e "r\ne\nw\ny" | sudo gdisk "$ROOTFS_IMG" || true
+        
+        # Now check the partition table again
+        echo "=== Re-analyzing after GPT fix ==="
+        sudo fdisk -l "$ROOTFS_IMG"
         sudo parted "$ROOTFS_IMG" unit s print || true
         
-        # Check if there are actual partitions defined (not just a GPT header)
-        PARTITION_COUNT=$(sudo parted "$ROOTFS_IMG" print 2>/dev/null | grep "^[[:space:]]*[0-9]" | wc -l)
-        echo "Detected $PARTITION_COUNT partition(s)"
+        # Use losetup to create a loop device for proper partition detection
+        echo "Creating loop device..."
+        LOOP_DEV=$(sudo losetup -f --show -P "$ROOTFS_IMG")
+        echo "Loop device created: $LOOP_DEV"
         
-        if [ "$PARTITION_COUNT" -eq 0 ]; then
-          echo "=== Image has no partitions - treating as raw filesystem ==="
+        # Wait a moment for partition devices to appear
+        sleep 2
+        
+        # List partition devices
+        echo "Partition devices:"
+        ls -la ${LOOP_DEV}* || true
+        
+        # Check if there are partition devices
+        PARTITION_DEVS=$(ls ${LOOP_DEV}p* 2>/dev/null | wc -l)
+        echo "Found $PARTITION_DEVS partition device(s)"
+        
+        if [ "$PARTITION_DEVS" -eq 0 ]; then
+          echo "=== No partition devices found - trying direct mount ==="
           
-          # Try to mount directly first to confirm it's a filesystem
+          # Try to mount the loop device directly
           mkdir -p ./rootfs
-          if sudo mount -o loop "$ROOTFS_IMG" ./rootfs 2>/dev/null; then
-            echo "Successfully mounted as raw ext4 filesystem"
+          if sudo mount "$LOOP_DEV" ./rootfs 2>/dev/null; then
+            echo "Successfully mounted loop device as raw filesystem"
             
-            # Unmount to expand the image
+            # Unmount to expand
             sudo umount ./rootfs
+            sudo losetup -d "$LOOP_DEV"
             
-            # Expand the raw filesystem image
+            # Expand the image
             echo "Expanding raw filesystem image by 3800MB..."
             dd if=/dev/zero bs=1M count=3800 >> "$ROOTFS_IMG"
             
-            # Resize the filesystem to use the new space
+            # Resize the filesystem
             echo "Resizing ext4 filesystem..."
             sudo e2fsck -f -y "$ROOTFS_IMG" || true
             sudo resize2fs "$ROOTFS_IMG"
             
-            # Remount the expanded filesystem
-            sudo mount -o loop "$ROOTFS_IMG" ./rootfs
+            # Remount
+            LOOP_DEV=$(sudo losetup -f --show "$ROOTFS_IMG")
+            sudo mount "$LOOP_DEV" ./rootfs
             MOUNTED=true
           else
-            echo "Error: Image has no partitions and cannot be mounted as raw filesystem"
-            echo "Trying to detect filesystem type..."
+            echo "Error: Cannot mount as raw filesystem"
+            sudo losetup -d "$LOOP_DEV"
             file "$ROOTFS_IMG"
             sudo blkid "$ROOTFS_IMG" || true
             exit 1
           fi
         else
-          echo "=== Image has partitions - treating as partitioned disk ==="
-          MOUNTED=false
+          echo "=== Found partition devices - treating as partitioned disk ==="
           
-          # Create a larger image file (add 3800MB for PhotonVision and dependencies)
+          # Get the last partition device (usually the rootfs)
+          ROOTFS_PART=$(ls ${LOOP_DEV}p* 2>/dev/null | tail -n1)
+          echo "Using partition: $ROOTFS_PART"
+          
+          # Unmount loop device to expand the image
+          sudo losetup -d "$LOOP_DEV"
+          
+          # Expand the image
+          echo "Expanding disk image by 3800MB..."
           dd if=/dev/zero bs=1M count=3800 >> "$ROOTFS_IMG"
           
-          # Fix GPT after expanding the image
-          echo "Fixing GPT partition table after expansion..."
-          sudo sgdisk -e "$ROOTFS_IMG" || echo "Warning: Could not fix GPT, continuing anyway..."
+          # Fix GPT after expansion
+          echo "Fixing GPT after expansion..."
+          echo -e "r\ne\nw\ny" | sudo gdisk "$ROOTFS_IMG" || true
           
-          # Dynamically detect partition offset
-          echo "Detecting partition layout..."
-          sudo fdisk -l "$ROOTFS_IMG"
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-          # Use sfdisk for more reliable partition detection (works better with GPT)
-          echo "Analyzing partitions with sfdisk..."
+          # Recreate loop device
+          LOOP_DEV=$(sudo losetup -f --show -P "$ROOTFS_IMG")
+          sleep 2
           
-          # sfdisk provides machine-readable output
-          # Format: device : start= X, size= Y, type= Z
-          echo "Running: sudo sfdisk -d $ROOTFS_IMG"
-          sudo sfdisk -d "$ROOTFS_IMG" 2>&1 | tee /tmp/sfdisk_output.txt
-          PARTITION_INFO=$(grep "start=" /tmp/sfdisk_output.txt | tail -n1)
+          # Get the partition device again
+          ROOTFS_PART=$(ls ${LOOP_DEV}p* 2>/dev/null | tail -n1)
+          echo "Partition after expansion: $ROOTFS_PART"
           
-          if [ -z "$PARTITION_INFO" ]; then
-            echo "sfdisk failed or no partitions found, trying parted..."
-            # Fallback to parted
-            echo "Running: sudo parted $ROOTFS_IMG unit s print"
-            sudo parted "$ROOTFS_IMG" unit s print 2>&1 | tee /tmp/parted_output.txt
-            # Get the last partition (usually the rootfs)
-            START_SECTOR=$(grep "^[[:space:]]*[0-9]" /tmp/parted_output.txt | tail -n1 | awk '{print $2}' | sed 's/s$//')
-            echo "Extracted start sector from parted: $START_SECTOR"
-          else
-            echo "Partition info from sfdisk: $PARTITION_INFO"
-            # Extract start sector from sfdisk output
-            START_SECTOR=$(echo "$PARTITION_INFO" | sed -n 's/.*start=[[:space:]]*\([0-9]*\).*/\1/p')
-            echo "Extracted start sector from sfdisk: $START_SECTOR"
-          fi
-          
-          # Get sector size from fdisk output (typically 512 bytes)
-          SECTOR_SIZE=$(sudo fdisk -l "$ROOTFS_IMG" | grep "^Units:" | awk '{print $(NF-1)}')
-          
-          # Default to 512 if not found
-          if [ -z "$SECTOR_SIZE" ]; then
-            SECTOR_SIZE=512
-            echo "Warning: Could not detect sector size, defaulting to 512 bytes"
-          fi
-        
-
-
-
-
-
-          if [ -z "$START_SECTOR" ] || [ "$START_SECTOR" = "0" ]; then
-            echo "Error: Could not detect partition start sector or invalid sector detected"
-            echo "START_SECTOR value: '$START_SECTOR'"
-            echo "Full fdisk output:"
-            sudo fdisk -l "$ROOTFS_IMG"
-            echo "Full sfdisk output:"
-            cat /tmp/sfdisk_output.txt 2>/dev/null || echo "No sfdisk output available"
-            echo "Full parted output:"
-            cat /tmp/parted_output.txt 2>/dev/null || echo "No parted output available"
-            exit 1
-          fi
-          
-          echo "Start sector: $START_SECTOR"
-          echo "Sector size: $SECTOR_SIZE bytes"
-          
-          # Calculate offset in bytes
-          OFFSET=$((START_SECTOR * SECTOR_SIZE))
-          echo "Calculated offset: $OFFSET bytes"
-          
-          # Mount with dynamically calculated offset
+          # Mount the partition
           mkdir -p ./rootfs
-          sudo mount -o loop,offset=$OFFSET "$ROOTFS_IMG" ./rootfs
+          sudo mount "$ROOTFS_PART" ./rootfs
           
-          # Resize the filesystem to use the newly added space
-          echo "Resizing filesystem to use expanded space..."
-          sudo resize2fs $(sudo losetup -j "$ROOTFS_IMG" | cut -d: -f1) || echo "Warning: resize2fs failed, filesystem may not use full space"
+          # Resize the filesystem
+          echo "Resizing filesystem..."
+          sudo resize2fs "$ROOTFS_PART" || echo "Warning: resize2fs failed"
           MOUNTED=true
         fi
         
@@ -268,6 +228,11 @@ jobs:
         sudo umount rootfs/sys || true
         sudo umount rootfs/proc || true
         sudo umount rootfs || true
+        
+        # Cleanup loop device if it exists
+        if [ -n "$LOOP_DEV" ]; then
+          sudo losetup -d "$LOOP_DEV" || true
+        fi
         
         # Assembly process for remaining files
         mkdir -p QLI
