@@ -37,20 +37,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y qemu-user-static wget xz-utils rsync
         
-        # Free up disk space on GitHub Actions runner
-        echo "=== Initial disk space ==="
-        df -h
-        
-        echo "=== Cleaning up unnecessary files ==="
-        sudo rm -rf /usr/share/dotnet
-        sudo rm -rf /opt/ghc
-        sudo rm -rf /usr/local/share/boost
-        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-        sudo apt-get clean
-        
-        echo "=== Disk space after cleanup ==="
-        df -h
-        
         # Download and process manifest
         wget -O manifest.yaml "${{ matrix.base_image }}"
         
@@ -114,7 +100,6 @@ jobs:
         
         echo "Using rootfs image: $ROOTFS_IMG"
         
-        # Mount using the method from rpiimager/inflate.sh
         # This uses a fixed offset for Ubuntu preinstalled server images
         echo "=== Mounting rootfs with fixed offset (rpiimager method) ==="
         mkdir -p ./rootfs
