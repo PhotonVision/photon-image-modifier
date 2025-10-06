@@ -35,7 +35,7 @@ jobs:
         
         # Install required packages
         sudo apt-get update
-        sudo apt-get install -y qemu-user-static wget xz-utils rsync yq
+        sudo apt-get install -y qemu-user-static wget xz-utils rsync yq gdisk parted
         
         # Download and process manifest
         wget -O manifest.yaml "${{ matrix.base_image }}"
@@ -84,50 +84,48 @@ jobs:
         # Create a larger image file (add 3800MB for PhotonVision and dependencies)
         dd if=/dev/zero bs=1M count=3800 >> "$ROOTFS_IMG"
         
+        # Fix GPT after expanding the image
+        echo "Fixing GPT partition table after expansion..."
+        sudo sgdisk -e "$ROOTFS_IMG" || echo "Warning: Could not fix GPT, continuing anyway..."
+        
         # Dynamically detect partition offset
         echo "Detecting partition layout..."
         sudo fdisk -l "$ROOTFS_IMG"
         
-        # Get partition information using sfdisk
-        # For GPT images, skip the protective MBR (type=ee) and find the actual rootfs partition
-        # Look for the largest non-protective partition
-        echo "Analyzing partitions..."
-        sudo sfdisk -d "$ROOTFS_IMG" | grep "^${ROOTFS_IMG}" | while read line; do
-          echo "Found partition: $line"
-        done
+        # Use fdisk to extract partition information directly
+        # Find the largest Linux filesystem partition (not EFI, not protective MBR)
+        echo "Analyzing partitions with fdisk..."
+        PARTITION_LINE=$(sudo fdisk -l "$ROOTFS_IMG" | grep "^${ROOTFS_IMG}" | grep -i "linux" | tail -n1)
         
-        # Get the largest partition that is NOT type=ee (protective MBR)
-        PARTITION_INFO=$(sudo sfdisk -d "$ROOTFS_IMG" | grep "^${ROOTFS_IMG}" | grep -v "type=ee" | sort -t'=' -k3 -n | tail -n1)
+        if [ -z "$PARTITION_LINE" ]; then
+          echo "No Linux partition found, trying without filter..."
+          PARTITION_LINE=$(sudo fdisk -l "$ROOTFS_IMG" | grep "^${ROOTFS_IMG}" | grep -v "EFI" | tail -n1)
+        fi
         
-        # If no non-ee partitions found, try to get partition info from fdisk directly
-        if [ -z "$PARTITION_INFO" ]; then
-          echo "No GPT partitions found, trying fdisk method..."
-          # Use fdisk to find the largest partition
-          PARTITION_NUM=$(sudo fdisk -l "$ROOTFS_IMG" | grep "^${ROOTFS_IMG}" | grep -v "EFI" | tail -n1 | sed 's/\*//g' | awk '{print $1}' | sed "s|${ROOTFS_IMG}||")
-          if [ -n "$PARTITION_NUM" ]; then
-            # Use parted to get the start position
-            START_SECTOR=$(sudo parted "$ROOTFS_IMG" unit s print | grep "^ ${PARTITION_NUM}" | awk '{print $2}' | sed 's/s//')
-            SECTOR_SIZE=512
-          fi
-        else
-          echo "Selected partition info: $PARTITION_INFO"
-          
-          # Extract start sector from sfdisk output
-          # sfdisk output format: device : start=X, size=Y, type=Z
-          START_SECTOR=$(echo "$PARTITION_INFO" | sed -n 's/.*start=\s*\([0-9]*\).*/\1/p')
-          
-          # Get sector size from fdisk output (typically 512 bytes)
-          SECTOR_SIZE=$(sudo fdisk -l "$ROOTFS_IMG" | grep "^Units:" | awk '{print $(NF-1)}')
-          
-          # Default to 512 if not found
-          if [ -z "$SECTOR_SIZE" ]; then
-            SECTOR_SIZE=512
-            echo "Warning: Could not detect sector size, defaulting to 512 bytes"
-          fi
+        echo "Selected partition line: $PARTITION_LINE"
+        
+        # Extract start sector from fdisk output
+        # fdisk output format: Device Boot Start End Sectors Size Id Type
+        START_SECTOR=$(echo "$PARTITION_LINE" | awk '{print $2}')
+        
+        # If START_SECTOR contains a *, it's the boot flag, so use $3 instead
+        if [[ "$START_SECTOR" == "*" ]]; then
+          START_SECTOR=$(echo "$PARTITION_LINE" | awk '{print $3}')
+        fi
+        
+        # Get sector size from fdisk output (typically 512 bytes)
+        SECTOR_SIZE=$(sudo fdisk -l "$ROOTFS_IMG" | grep "^Units:" | awk '{print $(NF-1)}')
+        
+        # Default to 512 if not found
+        if [ -z "$SECTOR_SIZE" ]; then
+          SECTOR_SIZE=512
+          echo "Warning: Could not detect sector size, defaulting to 512 bytes"
         fi
         
         if [ -z "$START_SECTOR" ]; then
           echo "Error: Could not detect partition start sector"
+          echo "Full fdisk output:"
+          sudo fdisk -l "$ROOTFS_IMG"
           exit 1
         fi
         
