@@ -31,7 +31,7 @@ jobs:
     - name: Build rubikpi3 with custom mounting
       if: matrix.name == 'rubikpi3'
       run: |
-        set -ex
+        set -exv
         
         # Install required packages
         sudo apt-get update
@@ -167,15 +167,29 @@ jobs:
         sudo mkdir -p rootfs/tmp/build/
         sudo rsync -av --exclude=rootfs --exclude=.git --exclude=*.img --exclude=*.xz . rootfs/tmp/build/
         
-        # Run the installation scripts in chroot
-        sudo chroot rootfs /bin/bash -c "
+        # Install sudo in the chroot environment (needed by install scripts)
+        echo "=== Installing sudo in chroot ==="
+        sudo chroot rootfs /usr/bin/qemu-aarch64-static /bin/bash -c "set -exv && apt-get update && apt-get install -y sudo"
+        
+        # Run the installation scripts in chroot with verbose output
+        echo "=== Running installation scripts in chroot ==="
+        sudo chroot rootfs /usr/bin/qemu-aarch64-static /bin/bash -c "
+          set -exv
           cd /tmp/build
+          echo '=== Current directory: \$(pwd) ==='
+          echo '=== Files in current directory: ==='
+          ls -la
+          echo '=== Making script executable ==='
           chmod +x ${{ matrix.script }}
+          echo '=== Running ${{ matrix.script }} ==='
           ./${{ matrix.script }}
+          echo '=== Running install_common.sh ==='
           chmod +x ./install_common.sh
           ./install_common.sh
+          echo '=== Creating version file ==='
           mkdir -p /opt/photonvision/
           echo '${{ github.ref_name }};${{ matrix.name }}' > /opt/photonvision/image-version
+          echo '=== Installation complete ==='
         "
         
         # Cleanup mounts

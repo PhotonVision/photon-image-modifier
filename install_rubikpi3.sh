@@ -3,18 +3,19 @@
 # Verbose and exit on errors
 set -ex
 
-sudo apt upgrade -y
-
 # First update the APT
-sudo -E apt-get update
+sudo apt-get update
 
-apt-get install git net-tools lrzsz gdbserver unzip selinux-utils
+sudo apt-get install git net-tools lrzsz gdbserver unzip selinux-utils
 
-git clone -b ubuntu_setup --single-branch https://github.com/rubikpi-ai/rubikpi-script.git 
+sudo git clone -b ubuntu_setup --single-branch https://github.com/rubikpi-ai/rubikpi-script.git 
 cd rubikpi-script  
 ./install_ppa_pkgs.sh 
 
-apt-get install libqnn1 libsnpe1 tensorflow-lite-qcom-apps qcom-adreno1
+sudo apt-get install libqnn1 libsnpe1 tensorflow-lite-qcom-apps qcom-adreno1
+
+# Go back to parent directory to run photon installer
+cd ..
 
 # Run normal photon installer
 chmod +x ./install.sh
