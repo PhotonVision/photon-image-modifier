@@ -42,7 +42,7 @@ install_if_missing() {
 
   debug "Installing $1..."
   if [[ -z $TEST ]]; then
-    apt-get install --yes "$1"
+    apt-get install --yes --fix-broken "$1"
     # Always mark our upstream apt deps as held back, which will prevent the package 
     # from being automatically installed, upgraded or removed
     apt-mark manual "$1"
