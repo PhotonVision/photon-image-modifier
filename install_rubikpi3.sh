@@ -6,28 +6,28 @@ REPO_ENTRY="deb http://apt.thundercomm.com/rubik-pi-3/noble ppa main"
 HOST_ENTRY="151.106.120.85 apt.rubikpi.ai"	# TODO: Remove legacy
 
 # First update the APT
-sudo apt-get update -y
+apt-get update -y
 
 
 # TODO: Remove legacy
-sudo sed -i "/$HOST_ENTRY/d" /etc/hosts || true
-sudo sed -i '/apt.rubikpi.ai ppa main/d' /etc/apt/sources.list || true
+sed -i "/$HOST_ENTRY/d" /etc/hosts || true
+sed -i '/apt.rubikpi.ai ppa main/d' /etc/apt/sources.list || true
 
 if ! grep -q "^[^#]*$REPO_ENTRY" /etc/apt/sources.list; then
-    echo "$REPO_ENTRY" | sudo tee -a /etc/apt/sources.list >/dev/null
+    echo "$REPO_ENTRY" | tee -a /etc/apt/sources.list >/dev/null
 fi
 
 # Add the GPG key for the RUBIK Pi PPA
-wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads/web/rubik-pi-3/tools/key.asc | sudo tee /etc/apt/trusted.gpg.d/rubikpi3.asc
+wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads/web/rubik-pi-3/tools/key.asc | tee /etc/apt/trusted.gpg.d/rubikpi3.asc
 
-sudo apt update -y
+apt update -y
 
-sudo apt-get -y install sqlite3-tools
-sudo apt-get -y install libqnn1 libsnpe1 tensorflow-lite-qcom-apps qcom-adreno1
-#sudo apt-get -y install sqlite3=3.45.1-1ubuntu2.4
+apt-get -y install sqlite3-tools
+apt-get -y install libqnn1 libsnpe1 tensorflow-lite-qcom-apps qcom-adreno1
+#apt-get -y install sqlite3=3.45.1-1ubuntu2.4
 
 
-sudo ln -sf libOpenCL.so.1 /usr/lib/aarch64-linux-gnu/libOpenCL.so # Fix for snpe-tools
+ln -sf libOpenCL.so.1 /usr/lib/aarch64-linux-gnu/libOpenCL.so # Fix for snpe-tools
 
 # Run normal photon installer
 chmod +x ./install.sh
@@ -46,7 +46,7 @@ apt-get autoremove -y
 
 echo "Installing additional things"
 
-sudo apt-get update -y
+apt-get update -y
 
 apt-get install -y pigpiod pigpio device-tree-compiler
 apt-get install -y network-manager net-tools
