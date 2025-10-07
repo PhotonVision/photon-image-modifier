@@ -1,16 +1,26 @@
 #!/bin/bash -v
-
 # Verbose and exit on errors
 set -ex
+
+REPO_ENTRY="deb http://apt.thundercomm.com/rubik-pi-3/noble ppa main"
+HOST_ENTRY="151.106.120.85 apt.rubikpi.ai"	# TODO: Remove legacy
 
 # First update the APT
 sudo apt-get update -y
 
-sudo apt-get install -y git net-tools lrzsz gdbserver unzip selinux-utils
 
-sudo git clone -b ubuntu_setup --single-branch https://github.com/rubikpi-ai/rubikpi-script.git 
-cd rubikpi-script  
-./install_ppa_pkgs.sh 
+# TODO: Remove legacy
+sudo sed -i "/$HOST_ENTRY/d" /etc/hosts || true
+sudo sed -i '/apt.rubikpi.ai ppa main/d' /etc/apt/sources.list || true
+
+if ! grep -q "^[^#]*$REPO_ENTRY" /etc/apt/sources.list; then
+    echo "$REPO_ENTRY" | sudo tee -a /etc/apt/sources.list >/dev/null
+fi
+
+# Add the GPG key for the RUBIK Pi PPA
+wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads/web/rubik-pi-3/tools/key.asc | sudo tee /etc/apt/trusted.gpg.d/rubikpi3.asc
+
+sudo apt update
 
 sudo apt-get install libqnn1 libsnpe1 tensorflow-lite-qcom-apps qcom-adreno1
 
