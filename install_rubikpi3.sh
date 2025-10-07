@@ -22,6 +22,7 @@ wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads
 
 apt update -y
 
+apt-get -y install libsqlite3-0=3.45.1-1ubuntu2.4
 apt-get -y install sqlite3-tools
 apt-get -y install libqnn1 libsnpe1 tensorflow-lite-qcom-apps qcom-adreno1
 #apt-get -y install sqlite3=3.45.1-1ubuntu2.4
