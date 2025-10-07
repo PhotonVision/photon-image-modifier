@@ -254,7 +254,7 @@ install_if_missing avahi-daemon
 install_if_missing cpufrequtils
 install_if_missing libatomic1
 install_if_missing v4l-utils
-install_if_missing sqlite3=3.45.1-1ubuntu2.4
+#install_if_missing sqlite3=3.45.1-1ubuntu2.4
 install_if_missing openjdk-17-jre-headless
 
 debug "Setting cpufrequtils to performance mode"
