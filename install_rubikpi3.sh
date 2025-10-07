@@ -22,10 +22,7 @@ wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads
 
 sudo apt update
 
-sudo apt-get install libqnn1 libsnpe1 tensorflow-lite-qcom-apps qcom-adreno1
-
-# Go back to parent directory to run photon installer
-cd ..
+sudo apt-get -y install libqnn1 libsnpe1 tensorflow-lite-qcom-apps qcom-adreno1
 
 # Run normal photon installer
 chmod +x ./install.sh
