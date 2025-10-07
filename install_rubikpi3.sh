@@ -22,7 +22,7 @@ wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads
 
 apt update -y
 
-apt-get -y install sqlite3=3.45.1-1ubuntu2.4
+apt-get install libsqlite3-0=3.45.1-1ubuntu2
 apt-get -y install libqnn1 libsnpe1 tensorflow-lite-qcom-apps qcom-adreno1
 
 ln -sf libOpenCL.so.1 /usr/lib/aarch64-linux-gnu/libOpenCL.so # Fix for snpe-tools
