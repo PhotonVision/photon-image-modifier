@@ -25,6 +25,8 @@ sudo apt update
 sudo apt-get -y install libqnn1 libsnpe1 tensorflow-lite-qcom-apps qcom-adreno1
 sudo apt-get -y install sqlite3=3.45.1-1ubuntu2.4
 
+sudo ln -sf libOpenCL.so.1 /usr/lib/aarch64-linux-gnu/libOpenCL.so # Fix for snpe-tools
+
 # Run normal photon installer
 chmod +x ./install.sh
 ./install.sh --install-nm=yes --arch=aarch64
@@ -41,11 +43,11 @@ apt-get purge -y gdb gcc g++ linux-headers* libgcc*-dev
 apt-get autoremove -y
 
 echo "Installing additional things"
-sudo apt-get update
+
+sudo apt-get update -y
+
 apt-get install -y pigpiod pigpio device-tree-compiler
 apt-get install -y network-manager net-tools
-# libcamera-driver stuff
-apt-get install -y libegl1 libopengl0 libgl1-mesa-dri libcamera-dev libgbm1
 
 rm -rf /var/lib/apt/lists/*
 apt-get clean
