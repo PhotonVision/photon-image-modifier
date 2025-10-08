@@ -35,8 +35,8 @@ jobs:
 
     - uses: actions/upload-artifact@v4.3.4
       with:
-        name: photonvision_rubikpi3.tar.gz
-        path: photonvision_rubikpi3.tar.gz
+        name: photonvision_rubikpi3.tar.xz
+        path: photonvision_rubikpi3.tar.xz
         if-no-files-found: error
         retention-days: 1
 

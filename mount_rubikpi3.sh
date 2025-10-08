@@ -204,4 +204,4 @@ find QLI -mindepth 1 -type d -empty -delete
 # Set output for later steps
 # Save the rootfs image path for later steps
 echo "rootfs_image=$ROOTFS_IMG" >> $GITHUB_ENV
-tar -cf photonvision_rubikpi3.tar.gz -C QLI .
+tar -cJf photonvision_rubikpi3.tar.xz -C QLI .
