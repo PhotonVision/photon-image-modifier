@@ -32,7 +32,6 @@ jobs:
       run: |
         chmod +x ./mount_rubikpi3.sh
         ./mount_rubikpi3.sh ${{ github.ref_name }} ${{ env.base_image }} ${{ env.script }}
-      id: install_deps_rubikpi3
 
     - uses: actions/upload-artifact@v4.3.4
       with:
