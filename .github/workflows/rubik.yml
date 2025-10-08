@@ -1,7 +1,7 @@
 name: Build driver
 on:
   push:
-    branches: [ main ]
+    branches: [ main, rubik-pi-image ]
     tags:
       - 'v*'
   pull_request:
