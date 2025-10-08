@@ -31,6 +31,7 @@ ln -sf libOpenCL.so.1 /usr/lib/aarch64-linux-gnu/libOpenCL.so # Fix for snpe-too
 chmod +x ./install.sh
 ./install.sh --install-nm=yes --arch=aarch64
 
+install -v -m 644 files/pigpiod.service /lib/systemd/system/pigpiod.service
 
 # Enable ssh/pigpiod
 systemctl enable ssh
