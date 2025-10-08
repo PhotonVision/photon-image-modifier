@@ -11,15 +11,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: rubikpi3
-            script: ./install_rubikpi3.sh
-            base_image: "https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x00/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20250912-127.yaml"
+    env:
+      script: "./install_rubikpi3.sh"
+      base_image: "https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x00/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20250912-127.yaml"  
                         
-    name: "Build for ${{ matrix.name }}"
+    name: "Build for RubikPi3"
 
     steps:
     - uses: actions/checkout@v4.1.7
@@ -29,7 +25,6 @@ jobs:
       run: git fetch --tags --force
 
     - name: Build rubikpi3 with mounting
-      if: matrix.name == 'rubikpi3'
       run: |
         set -exv
         
@@ -38,7 +33,7 @@ jobs:
         sudo apt-get install -y qemu-user-static wget xz-utils rsync
         
         # Download and process manifest
-        wget -O manifest.yaml "${{ matrix.base_image }}"
+        wget -O manifest.yaml "${{ base_image }}"
         
         echo "=== Manifest contents ==="
         cat manifest.yaml
@@ -187,15 +182,15 @@ jobs:
           echo '=== Files in current directory: ==='
           ls -la
           echo '=== Making script executable ==='
-          chmod +x ${{ matrix.script }}
-          echo '=== Running ${{ matrix.script }} ==='
-          ./${{ matrix.script }}
+          chmod +x ${{ script }}
+          echo '=== Running ${{ script }} ==='
+          ./${{ script }}
           echo '=== Running install_common.sh ==='
           chmod +x ./install_common.sh
           ./install_common.sh
           echo '=== Creating version file ==='
           mkdir -p /opt/photonvision/
-          echo '${{ github.ref_name }};${{ matrix.name }}' > /opt/photonvision/image-version
+          echo '${{ github.ref_name }};${{ name }}' > /opt/photonvision/image-version
           echo '=== Installation complete ==='
         "
         
@@ -229,17 +224,12 @@ jobs:
         
         # Set output for later steps
         echo "image=$ROOTFS_IMG" >> $GITHUB_OUTPUT
+        tar -cf photonvision_rubikpi3_full.tar.gz -C QLI .
       id: install_deps_rubikpi3
 
-    # Image compression step removed as only the QLI directory is needed
-
-    - name: Archive full QLI directory
-      run: |
-        tar -cf photonvision_${{ matrix.name }}_full.tar.gz -C QLI .
     - uses: actions/upload-artifact@v4.3.4
       with:
-        name: photonvision_${{ matrix.name }}_full
-        path: photonvision_${{ matrix.name }}_full.tar.gz
+        path: photonvision_rubikpi3_full.tar.gz
         if-no-files-found: error
         retention-days: 1
 
@@ -258,12 +248,12 @@ jobs:
           tag: 'Dev'
           rm: true
           files: |
-            **/*.tar.gz
+            **/*.zip
       # Upload all tar.gz archives to GH tag if tagged
       - uses: softprops/action-gh-release@v2.0.8
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: |
-            **/*.tar.gz
+            **/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
