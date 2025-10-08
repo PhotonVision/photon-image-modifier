@@ -9,33 +9,42 @@ set -exv
 # Install required packages
 sudo apt-get update
 sudo apt-get install -y qemu-user-static wget xz-utils rsync
+# If base_image ends with .yaml, treat it as a manifest and skip download
+if [[ "$base_image" == *.yaml ]]; then
+ 
+  # Download and process manifest
+  wget -O manifest.yaml "${base_image}"
 
-# Download and process manifest
-wget -O manifest.yaml "${base_image}"
+  echo "=== Manifest contents ==="
+  cat manifest.yaml
+  echo "========================="
 
-echo "=== Manifest contents ==="
-cat manifest.yaml
-echo "========================="
+  # Process each component using awk to extract URL and SHA256
+  awk '/url:/ {
+      sub(/.*url:[[:space:]]*/,"",$0);
+      url=$0
+       }
+       /sha256sum:/ {
+      sub(/.*sha256sum:[[:space:]]*/,"",$0);
+      print url, $0
+       }' manifest.yaml | while read -r url sha; do
+    filename=$(basename "$url")
+    echo "Downloading: $filename from $url"
+    wget -O "$filename" "$url"
+    echo "$sha  $filename" | sha256sum -c -
+  done
 
-# Process each component using awk to extract URL and SHA256
-awk '/url:/ {
-    sub(/.*url:[[:space:]]*/,"",$0);
-    url=$0
-     }
-     /sha256sum:/ {
-    sub(/.*sha256sum:[[:space:]]*/,"",$0);
-    print url, $0
-     }' manifest.yaml | while read -r url sha; do
-  filename=$(basename "$url")
-  echo "Downloading: $filename from $url"
-  wget -O "$filename" "$url"
-  echo "$sha  $filename" | sha256sum -c -
-done
-
-echo "=== Downloaded files ==="
-ls -lh
-echo "========================"
-
+  echo "=== Downloaded files ==="
+  ls -lh
+  echo "========================"
+elif [[ "$base_image" == *.tar.xz ]]; then
+  # Directly download the tar.xz file
+  wget -O base_image.tar.xz "${base_image}"
+  tar -xJf base_image.tar.xz
+else
+  echo "Error: base_image must be a .yaml manifest or .tar.xz"
+  exit 1
+fi
 # Find the rootfs image - look for the largest .img.xz file or one with "rootfs" in name
 ROOTFS_IMG_XZ=""
 
