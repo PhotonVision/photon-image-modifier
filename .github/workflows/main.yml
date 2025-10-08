@@ -12,6 +12,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  rubik:
+    env:
+      script: "./install_rubikpi3.sh"
+      base_image: "https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x00/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20250912-127.yaml"
+    
+    runs-on: ubuntu-24.04
+                        
+    name: "Build for RubikPi3"
+
+    steps:
+    - uses: actions/checkout@v4.1.7
+      with:
+        fetch-depth: 0
+    - name: Fetch tags
+      run: git fetch --tags --force
+
+    - name: Build rubikpi3 with mounting
+      run: |
+        chmod +x ./mount_rubikpi3.sh
+        ./mount_rubikpi3.sh ${{ github.ref_name }} ${{ env.base_image }} ${{ env.script }}
+      id: install_deps_rubikpi3
+
+    - uses: actions/upload-artifact@v4.3.4
+      with:
+        name: photonvision_rubikpi3.tar.gz
+        path: photonvision_rubikpi3.tar.gz
+        if-no-files-found: error
+        retention-days: 1
+
   build:
     runs-on: ubuntu-24.04
 
