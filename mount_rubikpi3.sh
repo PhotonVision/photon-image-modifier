@@ -3,8 +3,6 @@
 base_image=$1
 script=$2
 
-shift 2
-
 set -exv
 
 # Install required packages
@@ -172,8 +170,8 @@ sudo chroot rootfs /usr/bin/qemu-aarch64-static /bin/bash -c "
   export DEBIAN_FRONTEND=noninteractive
   echo '=== Making script executable ==='
   chmod +x ${script}
-  echo '=== Running ${script} with arguments: ${@} ==='
-  ./${script} ${@}
+  echo '=== Running ${script} with arguments: ${@:3} ==='
+  ./${script} ${@:3}
 "
 
 # Cleanup mounts
