@@ -174,22 +174,22 @@ if [ -n "$LOOP_DEV" ]; then
 fi
 
 # Assembly process for remaining files
-mkdir -p QLI
-# Extract .tar.gz archive(s) directly into QLI
+mkdir -p photonvision_rubikpi3
+# Extract .tar.gz archive(s) directly into photonvision_rubikpi3 if they exist
 if ls *.tar.gz 1>/dev/null 2>&1; then
-  tar -xzf *.tar.gz -C QLI
+  tar -xzf *.tar.gz -C photonvision_rubikpi3
 fi
-# Move all files (rawprogram, dtb, img) into QLI
-mv rawprogram*.xml QLI/ 2>/dev/null || true
-mv dtb.bin QLI/ 2>/dev/null || true
-mv *.img QLI/ 2>/dev/null || true
+# Move all files (rawprogram, dtb, img) into photonvision_rubikpi3
+mv rawprogram*.xml photonvision_rubikpi3/ 2>/dev/null || true
+mv dtb.bin photonvision_rubikpi3/ 2>/dev/null || true
+mv *.img photonvision_rubikpi3/ 2>/dev/null || true
 
-# Flatten directory structure - move all files from subdirectories to QLI root
-find QLI -mindepth 2 -type f -exec mv {} QLI/ \;
+# Flatten directory structure - move all files from subdirectories to photonvision_rubikpi3 root
+find photonvision_rubikpi3 -mindepth 2 -type f -exec mv {} photonvision_rubikpi3/ \;
 # Remove empty subdirectories
-find QLI -mindepth 1 -type d -empty -delete
+find photonvision_rubikpi3 -mindepth 1 -type d -empty -delete
 
 # Set output for later steps
 # Save the rootfs image path for later steps
 echo "rootfs_image=$ROOTFS_IMG" >> $GITHUB_ENV
-tar -cJf photonvision_rubikpi3.tar.xz -C QLI .
+tar -cJf photonvision_rubikpi3.tar.xz -C . photonvision_rubikpi3
