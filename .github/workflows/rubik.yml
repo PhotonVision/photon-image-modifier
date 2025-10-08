@@ -7,13 +7,13 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  script: "./install_rubikpi3.sh"
+  base_image: "https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x00/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20250912-127.yaml"
+
 jobs:
   build:
-    runs-on: ubuntu-latest
-
-    env:
-      script: "./install_rubikpi3.sh"
-      base_image: "https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x00/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20250912-127.yaml"  
+    runs-on: ubuntu-latest  
                         
     name: "Build for RubikPi3"
 
@@ -33,7 +33,7 @@ jobs:
         sudo apt-get install -y qemu-user-static wget xz-utils rsync
         
         # Download and process manifest
-        wget -O manifest.yaml "${{ base_image }}"
+        wget -O manifest.yaml "${{ env.base_image }}"
         
         echo "=== Manifest contents ==="
         cat manifest.yaml
@@ -182,15 +182,15 @@ jobs:
           echo '=== Files in current directory: ==='
           ls -la
           echo '=== Making script executable ==='
-          chmod +x ${{ script }}
-          echo '=== Running ${{ script }} ==='
-          ./${{ script }}
+          chmod +x ${{ env.script }}
+          echo '=== Running ${{ env.script }} ==='
+          ./${{ env.script }}
           echo '=== Running install_common.sh ==='
           chmod +x ./install_common.sh
           ./install_common.sh
           echo '=== Creating version file ==='
           mkdir -p /opt/photonvision/
-          echo '${{ github.ref_name }};${{ name }}' > /opt/photonvision/image-version
+          echo '${{ github.ref_name }};rubikpi3' > /opt/photonvision/image-version
           echo '=== Installation complete ==='
         "
         
@@ -229,6 +229,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4.3.4
       with:
+        name: photonvision_rubikpi3_full.tar.gz
         path: photonvision_rubikpi3_full.tar.gz
         if-no-files-found: error
         retention-days: 1
@@ -248,12 +249,12 @@ jobs:
           tag: 'Dev'
           rm: true
           files: |
-            **/*.zip
+            **/*.tar.gz
       # Upload all tar.gz archives to GH tag if tagged
       - uses: softprops/action-gh-release@v2.0.8
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: |
-            **/*.zip
+            **/*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
