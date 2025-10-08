@@ -3,12 +3,13 @@
 base_image=$1
 script=$2
 
+shift 2
 
 set -exv
 
 # Install required packages
 sudo apt-get update
-sudo apt-get install -y qemu-user-static wget xz-utils rsync
+sudo apt-get install -y qemu-user-static wget xz-utils
 # If base_image ends with .yaml, treat it as a manifest and skip download
 if [[ "$base_image" == *.yaml ]]; then
  
@@ -151,9 +152,14 @@ sudo cp /etc/hosts rootfs/etc/hosts
 sudo cp /usr/bin/qemu-arm-static rootfs/usr/bin/ || true
 sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/ || true
 
+# DEPRECATED: using bind mount instead
 # Copy repository into chroot (excluding mounted directories and problematic files)
+# sudo mkdir -p rootfs/tmp/build/
+# sudo rsync -av --exclude=rootfs --exclude=.git --exclude=*.img --exclude=*.xz . rootfs/tmp/build/
+
+# Mount and bind the current directory into /tmp/build in chroot
 sudo mkdir -p rootfs/tmp/build/
-sudo rsync -av --exclude=rootfs --exclude=.git --exclude=*.img --exclude=*.xz . rootfs/tmp/build/
+sudo mount --bind "$(pwd)" rootfs/tmp/build/
 
 # Install sudo in the chroot environment (needed by install scripts)
 echo "=== Installing sudo in chroot ==="
@@ -166,8 +172,8 @@ sudo chroot rootfs /usr/bin/qemu-aarch64-static /bin/bash -c "
   export DEBIAN_FRONTEND=noninteractive
   echo '=== Making script executable ==='
   chmod +x ${script}
-  echo '=== Running ${script} with arguments: ${@:3} ==='
-  ./${script} ${@:3}
+  echo '=== Running ${script} with arguments: ${@} ==='
+  ./${script} ${@}
 "
 
 # Cleanup mounts
@@ -176,6 +182,9 @@ sudo umount rootfs/run || true
 sudo umount rootfs/sys || true
 sudo umount rootfs/proc || true
 sudo umount rootfs || true
+
+# Cleanup bind mount
+sudo umount rootfs/tmp/build/ || true
 
 # Cleanup loop device if it exists
 if [ -n "$LOOP_DEV" ]; then
