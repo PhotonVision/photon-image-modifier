@@ -31,11 +31,8 @@ ln -sf libOpenCL.so.1 /usr/lib/aarch64-linux-gnu/libOpenCL.so # Fix for snpe-too
 chmod +x ./install.sh
 ./install.sh --install-nm=yes --arch=aarch64
 
-install -v -m 644 files/pigpiod.service /lib/systemd/system/pigpiod.service
-
-# Enable ssh/pigpiod
+# Enable ssh
 systemctl enable ssh
-systemctl enable pigpiod
 
 
 # Remove extra packages too
@@ -47,7 +44,7 @@ echo "Installing additional things"
 
 apt-get update -y
 
-apt-get install -y pigpiod pigpio device-tree-compiler
+apt-get install -y device-tree-compiler
 apt-get install -y network-manager net-tools
 
 rm -rf /var/lib/apt/lists/*
