@@ -2,6 +2,11 @@
 # Verbose and exit on errors
 set -ex
 
+cd /tmp/build
+echo '=== Current directory: \$(pwd) ==='
+echo '=== Files in current directory: ==='
+ls -la
+
 REPO_ENTRY="deb http://apt.thundercomm.com/rubik-pi-3/noble ppa main"
 HOST_ENTRY="151.106.120.85 apt.rubikpi.ai"	# TODO: Remove legacy
 
@@ -52,3 +57,11 @@ apt-get clean
 
 rm -rf /usr/share/doc
 rm -rf /usr/share/locale/
+
+echo '=== Running install_common.sh ==='
+chmod +x ./install_common.sh
+./install_common.sh
+echo '=== Creating version file ==='
+mkdir -p /opt/photonvision/
+echo '{$1};rubikpi3' > /opt/photonvision/image-version
+echo '=== Installation complete ==='

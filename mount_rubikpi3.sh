@@ -1,8 +1,7 @@
 # Set variables
 
-ref_name=$1
-base_image=$2
-script=$3
+base_image=$1
+script=$2
 
 
 set -exv
@@ -156,21 +155,10 @@ echo "=== Running installation scripts in chroot ==="
 sudo chroot rootfs /usr/bin/qemu-aarch64-static /bin/bash -c "
   set -exv
   export DEBIAN_FRONTEND=noninteractive
-  cd /tmp/build
-  echo '=== Current directory: \$(pwd) ==='
-  echo '=== Files in current directory: ==='
-  ls -la
   echo '=== Making script executable ==='
   chmod +x ${script}
-  echo '=== Running ${script} ==='
-  ./${script}
-  echo '=== Running install_common.sh ==='
-  chmod +x ./install_common.sh
-  ./install_common.sh
-  echo '=== Creating version file ==='
-  mkdir -p /opt/photonvision/
-  echo '${ref_name};rubikpi3' > /opt/photonvision/image-version
-  echo '=== Installation complete ==='
+  echo '=== Running ${script} with arguments: ${@:3} ==='
+  ./${script} ${@:3}
 "
 
 # Cleanup mounts
