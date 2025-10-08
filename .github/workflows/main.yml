@@ -123,7 +123,7 @@ jobs:
         retention-days: 1
 
   release:
-    needs: [build]
+    needs: [build, rubik]
     runs-on: ubuntu-24.04
     steps:
       # Download literally every single artifact
