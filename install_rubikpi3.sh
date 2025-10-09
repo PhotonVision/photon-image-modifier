@@ -50,7 +50,6 @@ echo "Installing additional things"
 apt-get update -y
 
 apt-get install -y device-tree-compiler
-apt-get install -y network-manager net-tools
 
 rm -rf /var/lib/apt/lists/*
 apt-get clean
