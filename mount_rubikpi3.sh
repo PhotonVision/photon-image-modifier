@@ -179,15 +179,20 @@ sudo umount rootfs/dev || true
 sudo umount rootfs/run || true
 sudo umount rootfs/sys || true
 sudo umount rootfs/proc || true
+sudo umount rootfs/tmp/build/ || true
 sudo umount rootfs || true
 
-# Cleanup bind mount
-sudo umount rootfs/tmp/build/ || true
-
-# Cleanup loop device if it exists
+# More aggressive loop device cleanup
 if [ -n "$LOOP_DEV" ]; then
   sudo losetup -d "$LOOP_DEV" || true
 fi
+
+# Find and detach any remaining loop devices pointing to our image
+sudo losetup -j "$ROOTFS_IMG" | cut -d: -f1 | xargs -r sudo losetup -d
+
+# Ensure all filesystem operations are complete
+sync
+sleep 3
 
 # Assembly process for remaining files
 mkdir -p photonvision_rubikpi3
