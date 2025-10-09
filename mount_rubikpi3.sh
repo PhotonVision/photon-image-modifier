@@ -29,7 +29,7 @@ if [[ "$base_image" == *.yaml ]]; then
        }' manifest.yaml | while read -r url sha; do
     filename=$(basename "$url")
     echo "Downloading: $filename from $url"
-    wget -O "$filename" "$url"
+    wget -nv -O "$filename" "$url"
     echo "$sha  $filename" | sha256sum -c -
   done
 
@@ -38,7 +38,7 @@ if [[ "$base_image" == *.yaml ]]; then
   echo "========================"
 elif [[ "$base_image" == *.tar.xz ]]; then
   # Directly download the tar.xz file
-  wget -O base_image.tar.xz "${base_image}"
+  wget -nv -O base_image.tar.xz "${base_image}"
   tar -xJf base_image.tar.xz
 else
   echo "Error: base_image must be a .yaml manifest or .tar.xz"
