@@ -42,7 +42,14 @@ systemctl enable ssh
 
 # Remove extra packages too
 echo "Purging extra things"
-apt-get purge -y gdb gcc g++ linux-headers* libgcc*-dev perl-modules* git vim-runtime tensorflow-lite-qcom-apps snapd
+apt-get purge -y gdb gcc g++ linux-headers* libgcc*-dev perl-modules* git vim-runtime tensorflow-lite-qcom-apps
+
+# get rid of snaps
+echo "Purging snaps"
+rm -rf /var/lib/snapd/seed/snaps/*
+rm -f /var/lib/snapd/seed/seed.yaml
+apt-get purge --yes --quiet lxd-installer lxd-agent-loader
+apt-get purge --yes --quiet snapd
 apt-get autoremove -y
 
 echo "Installing additional things"
