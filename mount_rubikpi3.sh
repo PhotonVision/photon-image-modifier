@@ -113,9 +113,9 @@ if [ "$ImgType" == "Canonical" ]; then
   echo "=== Unmounting for expansion ==="
   sudo umount ./rootfs
 
-  # Expand the image by 4GB (reduced from 10GB to fit GitHub Actions disk space)
-  echo "=== Expanding image by 4GB ==="
-  dd if=/dev/zero bs=1M count=4096 >> "$ROOTFS_IMG"
+  # Expand the image by 2GB (reduced from 10GB to fit GitHub Actions disk space)
+  echo "=== Expanding image by 2GB ==="
+  dd if=/dev/zero bs=1M count=2048 >> "$ROOTFS_IMG"
 
   # Remount after expansion
   echo "=== Remounting after expansion ==="
