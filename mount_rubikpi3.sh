@@ -49,7 +49,7 @@ ROOTFS_IMG=""
 
 # If not found, use the largest .img.xz file
 ROOTFS_IMG="${ROOTFS_IMG:-$(find . -type f \( -name '*.img.xz' -o -name '*.img' \) -exec ls -s {} + 2>/dev/null | sort -rn | head -n1 | awk '{print $2}')}"
-[ -n "$ROOTFS_IMG" ] && echo "Using largest .img.xz file as rootfs: $ROOTFS_IMG"
+[ -n "$ROOTFS_IMG" ] && echo "Using largest .img.xz or .img file as rootfs: $ROOTFS_IMG"
 
 if [ -z "$ROOTFS_IMG" ] || [ ! -f "$ROOTFS_IMG" ]; then
   echo "Error: Could not find a suitable rootfs image file"
