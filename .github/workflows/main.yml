@@ -139,17 +139,10 @@ jobs:
             **/*.xz
         if: github.event_name == 'push'
       # Upload all xz archives to GH tag if tagged
-      - uses: softprops/action-gh-release@v2.0.8
+      - uses: softprops/action-gh-release@v2.4.0
         with:
           files: |
-            **/*opi5*.xz
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: softprops/action-gh-release@v2.0.8
-        with:
-          files: |
-            **/!(*opi5*).xz
+            **.xz
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
