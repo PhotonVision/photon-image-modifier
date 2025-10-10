@@ -47,13 +47,6 @@ fi
 # Find the rootfs image - look for the largest .img.xz file or one with "rootfs" in name
 ROOTFS_IMG_XZ=""
 
-# First try to find a file with "rootfs" in the name
-for file in $(find . -type f -name '*rootfs*.img.xz' -o -name '*rootfs*.img'); do
-  ROOTFS_IMG_XZ="$file"
-  echo "Found rootfs image by name: $ROOTFS_IMG_XZ"
-  break
-done
-
 # If not found, use the largest .img.xz file
 ROOTFS_IMG_XZ="${ROOTFS_IMG_XZ:-$(find . -type f -name '*.img.xz' -o -name '*.img' -exec ls -s {} + 2>/dev/null | sort -rn | head -n1 | awk '{print $2}')}"
 [ -n "$ROOTFS_IMG_XZ" ] && echo "Using largest .img.xz file as rootfs: $ROOTFS_IMG_XZ"
