@@ -153,9 +153,16 @@ sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/ || true
 sudo mkdir -p rootfs/tmp/build/
 sudo mount --bind "$(pwd)" rootfs/tmp/build/
 
-# Install sudo in the chroot environment (needed by install scripts)
-echo "=== Installing sudo in chroot ==="
-sudo chroot rootfs /usr/bin/qemu-aarch64-static /bin/bash -c "set -exv && DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y sudo"
+# Check if sudo is installed in the chroot environment, install if missing
+echo "=== Checking for sudo in chroot ==="
+sudo chroot rootfs /usr/bin/qemu-aarch64-static /bin/bash -c "
+  if ! command -v sudo &> /dev/null; then
+    echo 'sudo not found, installing...'
+    set -exv && DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y sudo
+  else
+    echo 'sudo is already installed'
+  fi
+"
 
 # Run the installation scripts in chroot with verbose output
 echo "=== Running installation scripts in chroot ==="
