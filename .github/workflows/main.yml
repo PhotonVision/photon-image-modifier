@@ -129,7 +129,8 @@ jobs:
       # Download literally every single artifact
       - uses: actions/download-artifact@v4.1.8
       - run: find
-      # Push to dev release, this will also push to tags using semantic versioning
+      # Push to dev release and/or to a real release if tagged using semantic versioning
+      # See https://github.com/pyTooling/Actions/tree/dev/releaser
       - uses: pyTooling/Actions/releaser@v1.0.5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
