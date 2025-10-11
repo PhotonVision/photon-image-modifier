@@ -137,4 +137,4 @@ jobs:
           rm: true
           files: |
             **/*.xz
-        if: github.event_name == 'push
+        if: github.event_name == 'push'
