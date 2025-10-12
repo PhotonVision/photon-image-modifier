@@ -7,28 +7,6 @@ echo '=== Current directory: \$(pwd) ==='
 echo '=== Files in current directory: ==='
 ls -la
 
-REPO_ENTRY="deb http://apt.thundercomm.com/rubik-pi-3/noble ppa main"
-HOST_ENTRY="151.106.120.85 apt.rubikpi.ai"	# TODO: Remove legacy
-
-# First update the APT
-apt-get update -y
-
-
-# TODO: Remove legacy
-if grep -q "$HOST_ENTRY" /etc/hosts; then
-    echo "Removing legacy host entry from /etc/hosts"
-    sed -i "/$HOST_ENTRY/d" /etc/hosts
-fi
-
-if grep -q "apt.rubikpi.ai ppa main" /etc/apt/sources.list; then
-    echo "Removing legacy repo entry from /etc/apt/sources.list"
-    sed -i '/apt.rubikpi.ai ppa main/d' /etc/apt/sources.list
-fi
-
-if ! grep -q "^[^#]*$REPO_ENTRY" /etc/apt/sources.list; then
-    echo "$REPO_ENTRY" | tee -a /etc/apt/sources.list >/dev/null
-fi
-
 # Add the GPG key for the RUBIK Pi PPA
 wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads/web/rubik-pi-3/tools/key.asc | tee /etc/apt/trusted.gpg.d/rubikpi3.asc
 
