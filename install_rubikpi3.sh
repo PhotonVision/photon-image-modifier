@@ -9,6 +9,9 @@ ls -la
 
 ln -sf libOpenCL.so.1 /usr/lib/aarch64-linux-gnu/libOpenCL.so # Fix for snpe-tools
 
+# This needs to run before install.sh to fix some weird dependency issues
+apt-get -y --allow-downgrades install libsqlite3-0=3.45.1-1ubuntu2
+
 # Add the GPG key for the RUBIK Pi PPA
 wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads/web/rubik-pi-3/tools/key.asc | tee /etc/apt/trusted.gpg.d/rubikpi3.asc
 
@@ -17,7 +20,7 @@ chmod +x ./install.sh
 ./install.sh --install-nm=yes --arch=aarch64
 
 # Install packages from the RUBIK Pi PPA, we skip calling apt-get update here because install.sh already does that
-apt-get -y --allow-downgrades install libsqlite3-0=3.45.1-1ubuntu2 libqnn1 libsnpe1 qcom-adreno1 device-tree-compiler
+apt-get -y install libqnn1 libsnpe1 qcom-adreno1 device-tree-compiler
 
 # Enable ssh
 systemctl enable ssh
