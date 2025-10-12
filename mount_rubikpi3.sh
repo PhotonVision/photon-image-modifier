@@ -39,7 +39,7 @@ if [[ "$base_image" == *.yaml ]]; then
 elif [[ "$base_image" == *.tar.xz ]]; then
   # Directly download the tar.xz file
   wget -nv -O base_image.tar.xz "${base_image}"
-  tar -xJvf base_image.tar.xz
+  tar -I 'xz -T0' -xf base_image.tar.xz
 else
   echo "Error: base_image must be a .yaml manifest or .tar.xz"
   exit 1
@@ -63,7 +63,7 @@ if [[ "$ROOTFS_IMG" == *.img.xz ]]; then
   ROOTFS_IMG_XZ="$ROOTFS_IMG"
   ROOTFS_IMG="${ROOTFS_IMG_XZ%.xz}"
   echo "Extracting rootfs image: $ROOTFS_IMG_XZ"
-  xz -d "$ROOTFS_IMG_XZ"
+  xz -T0 -d "$ROOTFS_IMG_XZ"
 fi
 
 if [ ! -f "$ROOTFS_IMG" ]; then
@@ -153,15 +153,19 @@ sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/ || true
 sudo mkdir -p rootfs/tmp/build/
 sudo mount --bind "$(pwd)" rootfs/tmp/build/
 
-# Install sudo in the chroot environment (needed by install scripts)
-echo "=== Installing sudo in chroot ==="
-sudo chroot rootfs /usr/bin/qemu-aarch64-static /bin/bash -c "set -exv && DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y sudo"
-
-# Run the installation scripts in chroot with verbose output
-echo "=== Running installation scripts in chroot ==="
+echo "=== Checking for sudo in chroot and running script ==="
 sudo chroot rootfs /usr/bin/qemu-aarch64-static /bin/bash -c "
   set -exv
   export DEBIAN_FRONTEND=noninteractive
+  if ! command -v sudo &> /dev/null; then
+    echo 'sudo not found, installing...'
+    apt-get update && apt-get install -y sudo
+  else
+    echo 'sudo is already installed'
+  fi
+
+  echo '=== Running installation scripts in chroot ==='
+
   echo '=== Making script executable ==='
   chmod +x ${script}
   echo '=== Running ${script} with arguments: ${@:3} ==='
@@ -207,4 +211,4 @@ find photonvision_rubikpi3 -mindepth 1 -type d -empty -delete
 # Set output for later steps
 # Save the rootfs image path for later steps
 echo "rootfs_image=$ROOTFS_IMG" >> $GITHUB_ENV
-tar -cJf photonvision_rubikpi3.tar.xz -C . photonvision_rubikpi3 --checkpoint
+tar -I 'xz -T0' -cf --checkpoint photonvision_rubikpi3.tar.xz photonvision_rubikpi3
