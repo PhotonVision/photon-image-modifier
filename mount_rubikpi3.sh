@@ -207,4 +207,4 @@ find photonvision_rubikpi3 -mindepth 1 -type d -empty -delete
 # Set output for later steps
 # Save the rootfs image path for later steps
 echo "rootfs_image=$ROOTFS_IMG" >> $GITHUB_ENV
-tar -cJf photonvision_rubikpi3.tar.xz -C . photonvision_rubikpi3
+tar -cJf photonvision_rubikpi3.tar.xz -C . photonvision_rubikpi3 --checkpoint
