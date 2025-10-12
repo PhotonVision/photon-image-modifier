@@ -27,8 +27,7 @@ wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads
 
 apt update -y
 
-apt-get -y --allow-downgrades install libsqlite3-0=3.45.1-1ubuntu2
-apt-get -y install libqnn1 libsnpe1 tensorflow-lite-qcom-apps qcom-adreno1
+apt-get -y --allow-downgrades install libsqlite3-0=3.45.1-1ubuntu2 libqnn1 libsnpe1 qcom-adreno1 device-tree-compiler
 
 ln -sf libOpenCL.so.1 /usr/lib/aarch64-linux-gnu/libOpenCL.so # Fix for snpe-tools
 
@@ -42,7 +41,7 @@ systemctl enable ssh
 
 # Remove extra packages too
 echo "Purging extra things"
-apt-get purge -y gdb gcc g++ linux-headers* libgcc*-dev perl-modules* git vim-runtime tensorflow-lite-qcom-apps
+apt-get purge -y gdb gcc g++ linux-headers* libgcc*-dev perl-modules* git vim-runtime
 
 # get rid of snaps
 echo "Purging snaps"
@@ -51,12 +50,6 @@ rm -f /var/lib/snapd/seed/seed.yaml
 apt-get purge --yes --quiet lxd-installer lxd-agent-loader
 apt-get purge --yes --quiet snapd
 apt-get autoremove -y
-
-echo "Installing additional things"
-
-apt-get update -y
-
-apt-get install -y device-tree-compiler
 
 rm -rf /var/lib/apt/lists/*
 apt-get clean
