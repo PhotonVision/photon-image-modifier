@@ -39,7 +39,7 @@ if [[ "$base_image" == *.yaml ]]; then
 elif [[ "$base_image" == *.tar.xz ]]; then
   # Directly download the tar.xz file
   wget -nv -O base_image.tar.xz "${base_image}"
-  tar -xJvf base_image.tar.xz
+  tar -I 'xz -T0' -xf base_image.tar.xz
 else
   echo "Error: base_image must be a .yaml manifest or .tar.xz"
   exit 1
@@ -211,4 +211,4 @@ find photonvision_rubikpi3 -mindepth 1 -type d -empty -delete
 # Set output for later steps
 # Save the rootfs image path for later steps
 echo "rootfs_image=$ROOTFS_IMG" >> $GITHUB_ENV
-tar -cJf photonvision_rubikpi3.tar.xz -C . photonvision_rubikpi3
+tar -I 'xz -T0' -cf photonvision_rubikpi3.tar.xz photonvision_rubikpi3
