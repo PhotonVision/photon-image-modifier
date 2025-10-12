@@ -63,7 +63,7 @@ if [[ "$ROOTFS_IMG" == *.img.xz ]]; then
   ROOTFS_IMG_XZ="$ROOTFS_IMG"
   ROOTFS_IMG="${ROOTFS_IMG_XZ%.xz}"
   echo "Extracting rootfs image: $ROOTFS_IMG_XZ"
-  xz -d "$ROOTFS_IMG_XZ"
+  xz -T0 -d "$ROOTFS_IMG_XZ"
 fi
 
 if [ ! -f "$ROOTFS_IMG" ]; then
