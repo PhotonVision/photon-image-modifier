@@ -7,18 +7,17 @@ echo '=== Current directory: \$(pwd) ==='
 echo '=== Files in current directory: ==='
 ls -la
 
+ln -sf libOpenCL.so.1 /usr/lib/aarch64-linux-gnu/libOpenCL.so # Fix for snpe-tools
+
 # Add the GPG key for the RUBIK Pi PPA
 wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads/web/rubik-pi-3/tools/key.asc | tee /etc/apt/trusted.gpg.d/rubikpi3.asc
-
-apt update -y
-
-apt-get -y --allow-downgrades install libsqlite3-0=3.45.1-1ubuntu2 libqnn1 libsnpe1 qcom-adreno1 device-tree-compiler
-
-ln -sf libOpenCL.so.1 /usr/lib/aarch64-linux-gnu/libOpenCL.so # Fix for snpe-tools
 
 # Run normal photon installer
 chmod +x ./install.sh
 ./install.sh --install-nm=yes --arch=aarch64
+
+# Install packages from the RUBIK Pi PPA, we skip calling apt-get update here because install.sh already does that
+apt-get -y --allow-downgrades install libsqlite3-0=3.45.1-1ubuntu2 libqnn1 libsnpe1 qcom-adreno1 device-tree-compiler
 
 # Enable ssh
 systemctl enable ssh
