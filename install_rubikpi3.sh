@@ -15,8 +15,15 @@ apt-get update -y
 
 
 # TODO: Remove legacy
-sed -i "/$HOST_ENTRY/d" /etc/hosts || true
-sed -i '/apt.rubikpi.ai ppa main/d' /etc/apt/sources.list || true
+if grep -q "$HOST_ENTRY" /etc/hosts; then
+    echo "Removing legacy host entry from /etc/hosts"
+    sed -i "/$HOST_ENTRY/d" /etc/hosts
+fi
+
+if grep -q "apt.rubikpi.ai ppa main" /etc/apt/sources.list; then
+    echo "Removing legacy repo entry from /etc/apt/sources.list"
+    sed -i '/apt.rubikpi.ai ppa main/d' /etc/apt/sources.list
+fi
 
 if ! grep -q "^[^#]*$REPO_ENTRY" /etc/apt/sources.list; then
     echo "$REPO_ENTRY" | tee -a /etc/apt/sources.list >/dev/null
