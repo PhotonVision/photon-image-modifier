@@ -24,6 +24,9 @@ if id "ubuntu" >/dev/null 2>&1; then
     deluser --remove-home ubuntu
 fi
 
+# Check available users
+awk -F: '{ print $1}' /etc/passwd
+
 # This needs to run before install.sh to fix some weird dependency issues
 apt-get -y --allow-downgrades install libsqlite3-0=3.45.1-1ubuntu2
 
