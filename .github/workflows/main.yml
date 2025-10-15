@@ -33,6 +33,10 @@ jobs:
         chmod +x ./mount_rubikpi3.sh
         ./mount_rubikpi3.sh ${{ env.base_image }} ${{ env.script }} ${{ github.ref_name }}
 
+    - name: Compress built image
+      run: |
+        tar -I 'xz -T0' -cf photonvision_rubikpi3.tar.xz ${{ env.image_dir }} --checkpoint=10000 --checkpoint-action=echo='%T'
+
     - uses: actions/upload-artifact@v4.3.4
       with:
         name: photonvision_rubikpi3.tar.xz
