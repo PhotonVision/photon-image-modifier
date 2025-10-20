@@ -206,7 +206,3 @@ mv *.img photonvision_rubikpi3/ 2>/dev/null || true
 find photonvision_rubikpi3 -mindepth 2 -type f -exec mv {} photonvision_rubikpi3/ \;
 # Remove empty subdirectories
 find photonvision_rubikpi3 -mindepth 1 -type d -empty -delete
-
-# Set output for later steps
-# Save the rootfs image path for later steps
-echo "image_dir=$PWD/photonvision_rubikpi3" >> $GITHUB_ENV
