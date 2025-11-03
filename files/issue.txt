@@ -14,5 +14,5 @@
      #####         ::::::::    :        
       ######        ####:::::::::       https://docs.photonvision.org/
        ##################    ::::::     
-         ##############                 
-           #########                    
+         ##############                 The SSH user:password pair for
+           #########                    this device is photon:vision
