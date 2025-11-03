@@ -4,15 +4,16 @@
          #################              for the FIRST Robotics Competition. 
        ######        ######   :::       
       #####            ##*::::::::::    To configure PhotonVision, open:
-     #####     :::::::::::::::::::      
-     #### :::::::::::    ###            http://photonvision.local:5800
-     ####                ####           
-    ####                 ####           using a computer on the same network 
-    #### ::              ###            as this device.
+     #####     :::::::::::::::::::      http://photonvision.local:5800
+     #### :::::::::::    ###            using a computer on the same
+     ####                ####           network as this device.
+    ####                 ####            
+    #### ::              ###            Documentation is available at:
      #### :::::::       ####            
-     ####     ::::::::  ####            Documentation is available at: 
+     ####     ::::::::  ####            https://docs.photonvision.org/ 
      #####         ::::::::    :        
-      ######        ####:::::::::       https://docs.photonvision.org/
+      ######        ####:::::::::       SSH Credentials:
        ##################    ::::::     
-         ##############                 The SSH user:password pair for
-           #########                    this device is photon:vision
+         ##############                 The username is photon
+           #########                    The password is vision
+                                        
