@@ -32,7 +32,7 @@ wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads
 
 # Run normal photon installer
 chmod +x ./install.sh
-./install.sh --install-nm=yes --arch=aarch64
+./install.sh --install-nm=yes
 
 # Install packages from the RUBIK Pi PPA, we skip calling apt-get update here because install.sh already does that
 apt-get -y install libqnn1 libsnpe1 qcom-adreno1 device-tree-compiler
@@ -56,11 +56,3 @@ apt-get clean
 
 rm -rf /usr/share/doc
 rm -rf /usr/share/locale/
-
-echo '=== Running install_common.sh ==='
-chmod +x ./install_common.sh
-./install_common.sh
-echo '=== Creating version file ==='
-mkdir -p /opt/photonvision/
-echo '{$1};rubikpi3' > /opt/photonvision/image-version
-echo '=== Installation complete ==='
