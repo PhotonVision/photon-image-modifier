@@ -6,7 +6,7 @@ set -exv
 
 # Install required packages
 sudo apt-get update
-sudo apt-get install -y qemu-user-static wget xz-utils
+sudo apt-get install -y wget xz-utils
 # If base_image ends with .yaml, treat it as a manifest and skip download
 if [[ "$base_image" == *.yaml ]]; then
  
@@ -139,10 +139,6 @@ sudo rm -f rootfs/etc/resolv.conf
 sudo cp /etc/resolv.conf rootfs/etc/resolv.conf
 sudo cp /etc/hosts rootfs/etc/hosts
 
-# Copy qemu static binaries for ARM emulation
-sudo cp /usr/bin/qemu-arm-static rootfs/usr/bin/ || true
-sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/ || true
-
 # DEPRECATED: using bind mount instead
 # Copy repository into chroot (excluding mounted directories and problematic files)
 # sudo mkdir -p rootfs/tmp/build/
@@ -153,7 +149,7 @@ sudo mkdir -p rootfs/tmp/build/
 sudo mount --bind "$(pwd)" rootfs/tmp/build/
 
 echo "=== Checking for sudo in chroot and running script ==="
-sudo chroot rootfs /usr/bin/qemu-aarch64-static /bin/bash -c "
+sudo chroot rootfs /bin/bash -c "
   set -exv
   export DEBIAN_FRONTEND=noninteractive
   if ! command -v sudo &> /dev/null; then

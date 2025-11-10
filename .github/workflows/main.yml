@@ -17,7 +17,7 @@ jobs:
       script: "./tmp/build/install_rubikpi3.sh"
       base_image: "https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x00/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20250912-127.yaml"
     
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
                         
     name: "Build for RubikPi3"
 
