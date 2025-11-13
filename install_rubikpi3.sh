@@ -19,9 +19,10 @@ echo "pi:raspberry" | chpasswd
 
 # Delete ubuntu user
 
-if id "ubuntu" >/dev/null 2>&1; then
+cat /etc/passwd
+if grep  "ubuntu" /etc/passwd; then
     echo 'removing ubuntu user'
-    deluser --remove-home ubuntu
+    sudo deluser --remove-home ubuntu
 fi
 
 # This needs to run before install.sh to fix some weird dependency issues
