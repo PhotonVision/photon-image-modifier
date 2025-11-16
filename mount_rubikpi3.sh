@@ -151,7 +151,7 @@ sudo mkdir -p rootfs/tmp/build/
 sudo mount --bind "$(pwd)" rootfs/tmp/build/
 
 echo "=== Checking for sudo in chroot and running script ==="
-sudo chroot rootfs /bin/bash -c "
+sudo -E chroot rootfs /bin/bash -c "
   set -exv
   export DEBIAN_FRONTEND=noninteractive
   if ! command -v sudo &> /dev/null; then
