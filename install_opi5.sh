@@ -15,7 +15,14 @@ else
 fi
 echo "pi:raspberry" | chpasswd
 
-apt-get -qq update 
+# silence log spam from dpkg
+cat > /etc/apt/apt.conf.d/99dpkg.conf << EOF
+Dpkg::Progress-Fancy "0";
+APT::Color "0";
+Dpkg::Use-Pty "0";
+EOF
+
+apt-get -q update 
 
 before=$(df --output=used / | tail -n1)
 # clean up stuff
@@ -24,13 +31,13 @@ before=$(df --output=used / | tail -n1)
 echo "Purging snaps"
 rm -rf /var/lib/snapd/seed/snaps/*
 rm -f /var/lib/snapd/seed/seed.yaml
-apt-get --yes -qq purge lxd-installer lxd-agent-loader
-apt-get --yes -qq purge snapd
+apt-get --yes -q purge lxd-installer lxd-agent-loader
+apt-get --yes -q purge snapd
 
 # remove bluetooth daemon
-apt-get --yes -qq purge bluez
+apt-get --yes -q purge bluez
 
-apt-get --yes -qq autoremove
+apt-get --yes -q autoremove
 
 # remove firmware that (probably) isn't needed
 rm -rf /usr/lib/firmware/mrvl
