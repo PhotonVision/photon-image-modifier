@@ -15,7 +15,7 @@ else
 fi
 echo "pi:raspberry" | chpasswd
 
-apt-get --quiet update 
+apt-get -qq update 
 
 before=$(df --output=used / | tail -n1)
 # clean up stuff
@@ -24,13 +24,13 @@ before=$(df --output=used / | tail -n1)
 echo "Purging snaps"
 rm -rf /var/lib/snapd/seed/snaps/*
 rm -f /var/lib/snapd/seed/seed.yaml
-apt-get --yes --quiet purge lxd-installer lxd-agent-loader
-apt-get --yes --quiet purge snapd
+apt-get --yes -qq purge lxd-installer lxd-agent-loader
+apt-get --yes -qq purge snapd
 
 # remove bluetooth daemon
-apt-get --yes --quiet purge bluez
+apt-get --yes -qq purge bluez
 
-apt-get --yes --quiet autoremove
+apt-get --yes -qq autoremove
 
 # remove firmware that (probably) isn't needed
 rm -rf /usr/lib/firmware/mrvl
@@ -49,7 +49,7 @@ chmod +x ./install.sh
 ./install.sh --install-nm=yes --arch=aarch64
 
 echo "Installing additional things"
-apt-get --yes --quiet install libc6 libstdc++6
+apt-get --yes -qq install libc6 libstdc++6
 
 # let netplan create the config during cloud-init
 rm -f /etc/netplan/00-default-nm-renderer.yaml
@@ -90,7 +90,7 @@ for btservice in $btservices; do
 done
 
 rm -rf /var/lib/apt/lists/*
-apt-get --yes --quiet clean
+apt-get --yes -qq clean
 
 rm -rf /usr/share/doc
 rm -rf /usr/share/locale/
