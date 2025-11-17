@@ -42,7 +42,7 @@ install_if_missing() {
 
   debug "Installing $1..."
   if [[ -z $TEST ]]; then
-    apt-get -qq -y install "$1"
+    apt-get -yq install "$1" -o Dpkg::Progress-Fancy="0" -o APT::Color="0" -o Dpkg::Use-Pty="0"
     # Always mark our upstream apt deps as held back, which will prevent the package 
     # from being automatically installed, upgraded or removed
     apt-mark manual "$1"
@@ -245,7 +245,7 @@ fi
 
 debug "Updating package list..."
 if [[ -z $TEST ]]; then
-  apt-get update
+  apt-get -q update
 fi
 debug "Updated package list."
 
