@@ -32,7 +32,7 @@ package_is_installed(){
 install_if_missing() {
   if package_is_installed "$1" ; then
     debug "Found existing $1. Skipping..."
-    # Always mark our upstream apt deps as held back, which will prevent the package 
+    # Always mark our upstream apt deps as held back, which will prevent the package
     # from being automatically installed, upgraded or removed
     if [[ -z $TEST ]]; then
       apt-mark manual "$1"
@@ -43,7 +43,7 @@ install_if_missing() {
   debug "Installing $1..."
   if [[ -z $TEST ]]; then
     apt-get install --yes "$1"
-    # Always mark our upstream apt deps as held back, which will prevent the package 
+    # Always mark our upstream apt deps as held back, which will prevent the package
     # from being automatically installed, upgraded or removed
     apt-mark manual "$1"
   fi
@@ -251,19 +251,26 @@ debug "Updated package list."
 
 install_if_missing curl
 install_if_missing avahi-daemon
-install_if_missing cpufrequtils
 install_if_missing libatomic1
 install_if_missing v4l-utils
 install_if_missing sqlite3
 install_if_missing openjdk-17-jre-headless
 
-debug "Setting cpufrequtils to performance mode"
+debug "Adding cpu governor service"
 if [[ -z $TEST ]]; then
-  if [ -f /etc/default/cpufrequtils ]; then
-      sed -i -e 's/^#\?GOVERNOR=.*$/GOVERNOR=performance/' /etc/default/cpufrequtils
-  else
-      echo 'GOVERNOR=performance' > /etc/default/cpufrequtils
-  fi
+  cat > /etc/systemd/system/cpu_governor.service <<EOF
+[Unit]
+Description=Service that sets the cpu frequency governor
+
+[Service]
+Type=oneshot
+ExecStart=bash -c 'echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor'
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  chmod 644 /etc/systemd/system/cpu_governor.service
+  systemctl enable cpu_governor.service
 fi
 
 if [[ "$INSTALL_NETWORK_MANAGER" == "yes" ]]; then
@@ -291,7 +298,7 @@ if [[ "$DISTRO" = "Ubuntu" && -z $(apt-cache search libcholmod3) ]]; then
   if [[ -z $TEST ]]; then
     if [[ "$ARCH" = "x86_64" ]]; then
       add-apt-repository -y -S 'deb http://security.ubuntu.com/ubuntu jammy main universe'
-    else 
+    else
       add-apt-repository -y -S 'deb http://ports.ubuntu.com/ubuntu-ports jammy main universe'
     fi
   fi
