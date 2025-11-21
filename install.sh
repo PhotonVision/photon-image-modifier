@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Exit on errors
-set -e
+set -e +u
 
 needs_arg() {
     if [ -z "$OPTARG" ]; then

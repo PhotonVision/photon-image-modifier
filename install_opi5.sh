@@ -1,10 +1,10 @@
 #!/bin/bash
-
+set +u
 # Verbose and exit on errors
-set -ex
+# set -ex
 
 # Create pi/raspberry login
-if id "$1" >/dev/null 2>&1; then
+if id "pi" >/dev/null 2>&1; then
     echo 'user found'
 else
     echo "creating pi user"

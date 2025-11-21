@@ -1,6 +1,6 @@
 #!/bin/bash
 # Verbose and exit on errors
-set -ex
+# set -ex
 
 # Do additional tasks that are common across all images, 
 # but not suitable for inclusion in install.sh

@@ -12,38 +12,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  rubik:
-    env:
-      script: "./tmp/build/install_rubikpi3.sh"
-      base_image: "https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x00/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20250912-127.yaml"
-      image_name: "rubikpi3"
+  # rubik:
+  #   env:
+  #     script: "./tmp/build/install_rubikpi3.sh"
+  #     base_image: "https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x00/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20250912-127.yaml"
+  #     image_name: "rubikpi3"
     
-    runs-on: ubuntu-24.04-arm
+  #   runs-on: ubuntu-24.04-arm
                         
-    name: "Build for RubikPi3"
+  #   name: "Build for RubikPi3"
 
-    steps:
-    - uses: actions/checkout@v4.1.7
-      with:
-        fetch-depth: 0
-    - name: Fetch tags
-      run: git fetch --tags --force
+  #   steps:
+  #   - uses: actions/checkout@v4.1.7
+  #     with:
+  #       fetch-depth: 0
+  #   - name: Fetch tags
+  #     run: git fetch --tags --force
 
-    - name: Build rubikpi3 with mounting
-      run: |
-        chmod +x ./mount_rubikpi3.sh
-        ./mount_rubikpi3.sh ${{ env.base_image }} ${{ env.script }}
+  #   - name: Build rubikpi3 with mounting
+  #     run: |
+  #       chmod +x ./mount_rubikpi3.sh
+  #       ./mount_rubikpi3.sh ${{ env.base_image }} ${{ env.script }}
 
-    - name: Compress built image
-      run: |
-        tar -I 'xz -T0' -cf photonvision_rubikpi3.tar.xz photonvision_rubikpi3 --checkpoint=10000 --checkpoint-action=echo='%T'
+  #   - name: Compress built image
+  #     run: |
+  #       tar -I 'xz -T0' -cf photonvision_rubikpi3.tar.xz photonvision_rubikpi3 --checkpoint=10000 --checkpoint-action=echo='%T'
 
-    - uses: actions/upload-artifact@v4.3.4
-      with:
-        name: photonvision_rubikpi3.tar.xz
-        path: photonvision_rubikpi3.tar.xz
-        if-no-files-found: error
-        retention-days: 1
+  #   - uses: actions/upload-artifact@v4.3.4
+  #     with:
+  #       name: photonvision_rubikpi3.tar.xz
+  #       path: photonvision_rubikpi3.tar.xz
+  #       if-no-files-found: error
+  #       retention-days: 1
 
   build:
     runs-on: ubuntu-24.04-arm
@@ -107,10 +107,18 @@ jobs:
       run: git fetch --tags --force
 
     - name: Install dependencies and build image
+      uses: photonvision/photon-image-runner@HEAD
       id: install_deps
-      run: |
-        sudo chmod +x ./mount_image.sh
-        sudo -E ./mount_image.sh ${{ matrix.base_image }} ${{ matrix.script }} 1000 2
+      with:
+        additional_mb: 1500
+        image_url: ${{ matrix.base_image }}
+        commands: |
+            echo "Running ${{ matrix.script }}"
+            chmod +x "${{ matrix.script }}"
+            "./${{ matrix.script }}"
+            echo "Running install_common.sh"
+            chmod +x "./install_common.sh"
+            "./install_common.sh"
 
     - name: Compress built image
       run: |
@@ -125,7 +133,8 @@ jobs:
         retention-days: 1
 
   release:
-    needs: [build, rubik]
+    # needs: [build, rubik]
+    needs: [build]
     runs-on: ubuntu-24.04
     steps:
       # Download literally every single artifact
