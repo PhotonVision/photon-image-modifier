@@ -32,7 +32,7 @@ wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads
 
 # Run normal photon installer
 chmod +x ./install.sh
-./install.sh --install-nm=yes --arch=aarch64
+./install.sh --install-nm=yes --arch=aarch64 --version="$1"
 
 # Install packages from the RUBIK Pi PPA, we skip calling apt-get update here because install.sh already does that
 apt-get -y install libqnn1 libsnpe1 qcom-adreno1 device-tree-compiler
