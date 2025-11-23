@@ -113,7 +113,7 @@ fi
 INSTALL_NETWORK_MANAGER="ask"
 VERSION="latest"
 
-while getopts "hlv:a:mnqt-:" OPT; do
+while getopts "hlva:mnqt-:" OPT; do
   if [ "$OPT" = "-" ]; then
     OPT="${OPTARG%%=*}"       # extract long option name
     OPTARG="${OPTARG#"$OPT"}" # extract long option argument (may be empty)
@@ -137,8 +137,8 @@ while getopts "hlv:a:mnqt-:" OPT; do
       exit 0
       ;;
     v | version)
-      needs_arg
-      VERSION=${OPTARG}
+      # needs_arg
+      VERSION=${OPTARG:-latest}
       ;;
     a | arch) needs_arg; ARCH=$OPTARG
       ;;
