@@ -12,16 +12,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  rubik:
-    runs-on: ubuntu-24.04-arm                        
-    name: "Build for RubikPi3"
-    steps:
-      - name: Dummy
-        run: echo "This is a dummy step. Remove when the ""Build for RubikPi3"" job is no longer required"
-
   build:
     runs-on: ubuntu-24.04-arm
-
     strategy:
       fail-fast: false
       matrix:
