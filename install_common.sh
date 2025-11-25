@@ -28,6 +28,7 @@ echo "photon:vision" | chpasswd
 cp -f ./files/issue.txt /etc/issue
 cp -f /etc/issue /etc/issue.net
 sed -i 's/#Banner none/Banner \/etc\/issue.net/g' /etc/ssh/sshd_config
+echo "Banner \/etc\/issue.net" > /etc/ssh/sshd_config.d/10_PhotonVisionBanner.conf
 
 # Add photon version file
 mkdir -p /opt/photonvision/
