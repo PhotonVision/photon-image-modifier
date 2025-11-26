@@ -1,6 +1,7 @@
-#!/bin/bash -v
-# Verbose and exit on errors
-set -ex
+#!/bin/bash
+
+# Exit on errors, print commands, ignore unset variables
+set -ex +u
 
 cd /tmp/build
 echo '=== Current directory: \$(pwd) ==='

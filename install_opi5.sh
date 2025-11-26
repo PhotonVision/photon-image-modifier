@@ -1,7 +1,7 @@
 #!/bin/bash
-set +u
-# Verbose and exit on errors
-# set -ex
+
+# Exit on errors, print commands, ignore unset variables
+set -ex +u
 
 # Create pi/raspberry login
 if id "pi" >/dev/null 2>&1; then
