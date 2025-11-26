@@ -64,6 +64,7 @@ jobs:
             script: ./install_rubikpi3.sh
             base_image: https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x00/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20250912-127.yaml
             root_location: "offset=569376768"
+            shrink_image: "no"
 
     name: "Build for ${{ matrix.name }}"
 
@@ -80,8 +81,8 @@ jobs:
       with:
         minimum_free_mb: 2000
         image_url: ${{ matrix.base_image }}
-        root_location: ${{ contains('rubikpi3', matrix.name) && 'offset=569376768' || 'partition=2' }}
-        shrink_image: ${{ contains('rubikpi3', matrix.name) && 'no' || 'yes' }}
+        root_location: ${{ matrix.root_location || 'partition=2' }}
+        shrink_image: ${{ matrix.shrink_image || 'yes' }}
         commands: |
             echo "Running ${{ matrix.script }}"
             chmod +x "${{ matrix.script }}"
