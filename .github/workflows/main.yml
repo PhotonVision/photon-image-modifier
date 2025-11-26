@@ -91,28 +91,30 @@ jobs:
             "./install_common.sh"
 
     - name: Compress built image 
-      if: ${{ ! endsWith(matrix.base_image, 'yaml') }}
+      # Compress the standard images
+      if: ${{ ! startsWith(matrix.name, 'rubik') }}
       run: |
         sudo mv ${{ steps.install_deps.outputs.image }} photonvision_${{ matrix.name }}.img
         sudo xz -T 0 -v photonvision_${{ matrix.name }}.img
         echo "artifact=photonvision_${{ matrix.name }}.img.xz" >> "$GITHUB_ENV"
 
     - name: Tar built image 
-      if: ${{ endsWith(matrix.base_image, 'yaml') }}
+      # Build the RubikPi3-specific tar file
+      if: ${{ startsWith(matrix.name, 'rubik') }}
       run: |
         imagedir=$(dirname ${{ steps.install_deps.outputs.image }})
         target=photonvision_${{ matrix.name }}
-        tardir=${RUNNER_TEMP}/${target}
+        tardir=./${target}
         mkdir --parents ${tardir}
-        if ls ${imagedir}*.tar.gz 1>/dev/null 2>&1; then
-          sudo tar -xzf ${imagedir}*.tar.gz -C ${tardir}
+        if ls ${imagedir}/*.tar.gz 1>/dev/null 2>&1; then
+          sudo tar --extract --ungzip --file=${imagedir}/*.tar.gz --directory=${tardir} --strip-components=1
         fi
         sudo mv ${imagedir}/rawprogram*.xml ${tardir}/ 2>/dev/null || true
         sudo mv ${imagedir}/dtb.bin ${tardir}/ 2>/dev/null || true
         sudo mv ${imagedir}/*.img ${tardir}/ 2>/dev/null || true
         sudo find ${tardir} -mindepth 2 -type f -exec mv {} ${tardir}/ \;
         sudo find ${tardir} -mindepth 1 -type d -empty -delete
-        sudo tar -I 'xz -T0' -cf ${target}.tar.xz ${tardir} --checkpoint=10000 --checkpoint-action=echo='%T'
+        sudo tar -I 'xz -T0' --create --file=${target}.tar.xz ${tardir} --checkpoint=10000 --checkpoint-action=echo='%T'
         echo "artifact=${target}.tar.xz" >> "$GITHUB_ENV"
 
     - uses: actions/upload-artifact@v4
