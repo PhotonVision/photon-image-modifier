@@ -105,7 +105,7 @@ jobs:
       run: |
         imagedir=$(dirname ${{ steps.install_deps.outputs.image }})
         target=photonvision_${{ matrix.name }}
-        tardir=./${target}
+        tardir=${target}
         mkdir --parents ${tardir}
         echo "Contents of imagedir: ${imagedir}"
         ls -la ${imagedir}
