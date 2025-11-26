@@ -125,7 +125,6 @@ jobs:
         retention-days: 1
 
   release:
-    # needs: [build, rubik]
     needs: [build]
     runs-on: ubuntu-24.04
     steps:
