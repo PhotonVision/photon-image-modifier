@@ -41,7 +41,6 @@ apt-get -y install libqnn1 libsnpe1 qcom-adreno1 device-tree-compiler
 # Enable ssh
 systemctl enable ssh
 
-
 # Remove extra packages too
 echo "Purging extra things"
 
@@ -57,7 +56,3 @@ apt-get clean
 
 rm -rf /usr/share/doc
 rm -rf /usr/share/locale/
-
-echo '=== Running install_common.sh ==='
-chmod +x ./install_common.sh
-./install_common.sh
