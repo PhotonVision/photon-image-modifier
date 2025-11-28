@@ -1,7 +1,7 @@
-#!/bin/bash -v
+#!/bin/bash
 
-# Verbose and exit on errors
-set -ex
+# Exit on errors, print commands, ignore unset variables
+set -ex +u
 
 # silence log spam from dpkg
 cat > /etc/apt/apt.conf.d/99dpkg.conf << EOF
