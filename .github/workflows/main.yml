@@ -86,7 +86,7 @@ jobs:
         commands: |
             echo "Running ${{ matrix.script }}"
             chmod +x "${{ matrix.script }}"
-            "./${{ matrix.script }}" "v2026.0.0-alpha-2"
+            "./${{ matrix.script }}"
             echo "Running install_common.sh"
             chmod +x "./install_common.sh"
             "./install_common.sh"
