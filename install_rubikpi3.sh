@@ -80,5 +80,6 @@ cat >> /var/lib/cloud/seed/nocloud/user-data << EOFUSERDATA
 hostname: photonvision
 
 runcmd:
+- nmcli radio all off
 - touch /etc/cloud/cloud-init.disabled
 EOFUSERDATA
