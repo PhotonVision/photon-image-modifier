@@ -72,7 +72,11 @@ cat /etc/systemd/system/photonvision.service
 systemctl disable systemd-networkd-wait-online.service
 
 # PhotonVision server is managing the network, so it doesn't need to wait for online
-systemctl disable NetworkManager-wait-online.service
+# systemctl disable NetworkManager-wait-online.service
+
+# Disable Bluetooth
+sed -i 's/^AutoEnable=.*/AutoEnable=false/g' /etc/bluetooth/main.conf
+systemctl disable bluetooth.service
 
 # set the hostname during cloud-init and disable cloud-init after first boot
 cat >> /var/lib/cloud/seed/nocloud/user-data << EOFUSERDATA
