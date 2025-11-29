@@ -23,12 +23,12 @@ chmod 0440 /etc/sudoers.d/010_pi-nopasswd
 
 echo "pi:raspberry" | chpasswd
 
-# Delete ubuntu user
-
-if id "ubuntu" >/dev/null 2>&1; then
-    echo 'removing ubuntu user'
-    deluser --remove-home ubuntu
-fi
+# silence log spam from dpkg
+cat > /etc/apt/apt.conf.d/99dpkg.conf << EOF
+Dpkg::Progress-Fancy "0";
+APT::Color "0";
+Dpkg::Use-Pty "0";
+EOF
 
 # This needs to run before install.sh to fix some weird dependency issues
 apt-get -y --allow-downgrades install libsqlite3-0=3.45.1-1ubuntu2
