@@ -61,3 +61,24 @@ apt-get clean
 
 rm -rf /usr/share/doc
 rm -rf /usr/share/locale/
+
+# modify photonvision.service to run on A78 cores
+sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
+cp -f /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
+chmod 644 /etc/systemd/system/photonvision.service
+cat /etc/systemd/system/photonvision.service
+
+# networkd isn't being used, this causes an unnecessary delay
+systemctl disable systemd-networkd-wait-online.service
+
+# PhotonVision server is managing the network, so it doesn't need to wait for online
+systemctl disable NetworkManager-wait-online.service
+
+# set the hostname during cloud-init and disable cloud-init after first boot
+cat >> /var/lib/cloud/seed/nocloud/user-data << EOFUSERDATA
+
+hostname: photonvision
+
+runcmd:
+- touch /etc/cloud/cloud-init.disabled
+EOFUSERDATA
