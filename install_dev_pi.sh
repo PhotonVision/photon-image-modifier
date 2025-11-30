@@ -18,6 +18,10 @@ chmod +x ./install.sh
 install -m 644 config.txt /boot/
 install -m 644 userconf.txt /boot/
 
+# configure hostname
+echo "photonvision" > /etc/hostname
+sed -i 's/raspberrypi/photonvision/g' /etc/hosts
+
 # Kill wifi and other networking things
 install -v -m 644 -D -t /etc/systemd/system/dhcpcd.service.d/ files/wait.conf
 install -v files/rpi-blacklist.conf /etc/modprobe.d/blacklist.conf
