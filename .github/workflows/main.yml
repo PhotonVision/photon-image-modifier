@@ -12,41 +12,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  rubik:
-    env:
-      script: "./tmp/build/install_rubikpi3.sh"
-      base_image: "https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x00/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20250912-127.yaml"
-    
-    runs-on: ubuntu-24.04-arm
-                        
-    name: "Build for RubikPi3"
-
-    steps:
-    - uses: actions/checkout@v4.1.7
-      with:
-        fetch-depth: 0
-    - name: Fetch tags
-      run: git fetch --tags --force
-
-    - name: Build rubikpi3 with mounting
-      run: |
-        chmod +x ./mount_rubikpi3.sh
-        ./mount_rubikpi3.sh ${{ env.base_image }} ${{ env.script }} ${{ github.ref_name }}
-
-    - name: Compress built image
-      run: |
-        tar -I 'xz -T0' -cf photonvision_rubikpi3.tar.xz photonvision_rubikpi3 --checkpoint=10000 --checkpoint-action=echo='%T'
-
-    - uses: actions/upload-artifact@v4.3.4
-      with:
-        name: photonvision_rubikpi3.tar.xz
-        path: photonvision_rubikpi3.tar.xz
-        if-no-files-found: error
-        retention-days: 1
-
   build:
-    runs-on: ubuntu-24.04
-
+    runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
@@ -93,44 +60,97 @@ jobs:
           - name: rock5c
             script: ./install_opi5.sh
             base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-rock-5c.img.xz
+          - name: rubikpi3
+            script: ./install_rubikpi3.sh
+            base_image: https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x01/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20250926-145.yaml
+            root_location: "offset=569376768"
+            shrink_image: "no"
 
     name: "Build for ${{ matrix.name }}"
 
     steps:
-    - uses: actions/checkout@v4.1.7
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Fetch tags
       run: git fetch --tags --force
 
-    - uses: pguyot/arm-runner-action@HEAD
+    - name: Generate version file
+      run: |
+
+        # Build the final JSON object
+        json_string=$(jq -n \
+          --arg date "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+          --arg commit_sha "${GITHUB_SHA}" \
+          --arg commit_tag "$(git describe --tags --abbrev=0 2>/dev/null || echo "untagged")" \
+          --arg image_name "${{ matrix.name }}" \
+          --arg image_source "${{ matrix.base_image }}" \
+          '{build_date: $date, commit_sha: $commit_sha, commit_tag: $commit_tag, image_name: $image_name, image_source: $image_source}')
+
+        echo "$json_string"
+
+        echo "$json_string" > image-version.json
+
+    - name: Install dependencies and build image
+      uses: photonvision/photon-image-runner@HEAD
       id: install_deps
       with:
-        image_additional_mb: 1500
-        bind_mount_repository: true
-        base_image: ${{ matrix.base_image }}
+        minimum_free_mb: 2000
+        image_url: ${{ matrix.base_image }}
+        root_location: ${{ matrix.root_location || 'partition=2' }}
+        shrink_image: ${{ matrix.shrink_image || 'yes' }}
         commands: |
-          chmod +x ${{matrix.script}}
-          ${{ matrix.script }}
-          chmod +x ./install_common.sh
-          ./install_common.sh
-          mkdir -p /opt/photonvision/
-          echo "${{ github.ref_name }};${{ matrix.name }}" > /opt/photonvision/image-version
+            echo "Running ${{ matrix.script }}"
+            chmod +x "${{ matrix.script }}"
+            "./${{ matrix.script }}"
+            echo "Running install_common.sh"
+            chmod +x "./install_common.sh"
+            "./install_common.sh"
 
-    - name: Compress built image
+    - name: Compress built image 
+      # Compress the standard images
+      if: ${{ ! startsWith(matrix.name, 'rubik') }}
       run: |
-        mv ${{ steps.install_deps.outputs.image }} photonvision_${{ matrix.name }}.img
+        sudo mv ${{ steps.install_deps.outputs.image }} photonvision_${{ matrix.name }}.img
         sudo xz -T 0 -v photonvision_${{ matrix.name }}.img
+        echo "artifact=photonvision_${{ matrix.name }}.img.xz" >> "$GITHUB_ENV"
 
-    - uses: actions/upload-artifact@v4.3.4
+    - name: Tar built image 
+      # Build the RubikPi3-specific tar file
+      if: ${{ startsWith(matrix.name, 'rubik') }}
+      run: |
+        imagedir=$(dirname ${{ steps.install_deps.outputs.image }})
+        target=photonvision_${{ matrix.name }}
+        tardir=${target}
+        mkdir --parents ${tardir}
+        echo "Contents of imagedir: ${imagedir}"
+        ls -la ${imagedir}
+        if ls ${imagedir}/*.tar.gz 1>/dev/null 2>&1; then
+          sudo tar -xzf ${imagedir}/*.tar.gz -C ${tardir} --strip-components=1
+        fi
+        sudo mv ${imagedir}/rawprogram*.xml ${tardir}/ 2>/dev/null || true
+        sudo mv ${imagedir}/dtb.bin ${tardir}/ 2>/dev/null || true
+        sudo mv ${imagedir}/*.img ${tardir}/ 2>/dev/null || true
+        sudo find ${tardir} -mindepth 2 -type f -exec mv {} ${tardir}/ \;
+        sudo find ${tardir} -mindepth 1 -type d -empty -delete
+        echo "Contents of tardir: ${tardir}"
+        ls -la ${tardir}
+        sudo tar -I 'xz -T0' --create --file=${target}.tar.xz ${tardir} --checkpoint=10000 --checkpoint-action=echo='%T'
+        echo "Contents of tar file:"
+        # Expenive operation (has to unzip the file), only use for debugging
+        # echo "Contents of tar file:"
+        # tar --list --file=${target}.tar.xz
+        echo "artifact=${target}.tar.xz" >> "$GITHUB_ENV"
+
+    - uses: actions/upload-artifact@v4
       with:
-        name: photonvision_${{ matrix.name }}.img.xz
-        path: photonvision_${{ matrix.name }}.img.xz
+        name: ${{ env.artifact }}
+        path: ${{ env.artifact }}
         if-no-files-found: error
         retention-days: 1
 
   release:
-    needs: [build, rubik]
+    needs: [build]
     runs-on: ubuntu-24.04
     steps:
       # Download literally every single artifact

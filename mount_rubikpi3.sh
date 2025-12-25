@@ -133,6 +133,8 @@ sudo mount -t sysfs sysfs rootfs/sys
 sudo mount -t tmpfs tmpfs rootfs/run
 sudo mount --bind /dev rootfs/dev
 
+findmnt
+
 # Setup DNS resolution in chroot
 echo "=== Setting up DNS in chroot ==="
 sudo rm -f rootfs/etc/resolv.conf
@@ -149,7 +151,7 @@ sudo mkdir -p rootfs/tmp/build/
 sudo mount --bind "$(pwd)" rootfs/tmp/build/
 
 echo "=== Checking for sudo in chroot and running script ==="
-sudo chroot rootfs /bin/bash -c "
+sudo -E chroot rootfs /bin/bash -c "
   set -exv
   export DEBIAN_FRONTEND=noninteractive
   if ! command -v sudo &> /dev/null; then
@@ -163,8 +165,10 @@ sudo chroot rootfs /bin/bash -c "
 
   echo '=== Making script executable ==='
   chmod +x ${script}
-  echo '=== Running ${script} with arguments: ${@:3} ==='
-  ./${script} ${@:3}
+  echo '=== Running ${script} ==='
+  ./${script}
+  echo '=== Zero filling empty space ==='
+  (cat /dev/zero > /zeros 2>/dev/null || true); sync; rm /zeros;
 "
 
 # Cleanup mounts
