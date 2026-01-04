@@ -263,14 +263,14 @@ tail -n999 /etc/apt/sources.list.d/*
 
 install_if_missing openjdk-25-jre-headless
 
-debug "Setting cpufrequtils to performance mode"
-if [[ -z $TEST ]]; then
-  if [ -f /etc/default/cpufrequtils ]; then
-      sed -i -e 's/^#\?GOVERNOR=.*$/GOVERNOR=performance/' /etc/default/cpufrequtils
-  else
-      echo 'GOVERNOR=performance' > /etc/default/cpufrequtils
-  fi
-fi
+# debug "Setting cpufrequtils to performance mode"
+# if [[ -z $TEST ]]; then
+#   if [ -f /etc/default/cpufrequtils ]; then
+#       sed -i -e 's/^#\?GOVERNOR=.*$/GOVERNOR=performance/' /etc/default/cpufrequtils
+#   else
+#       echo 'GOVERNOR=performance' > /etc/default/cpufrequtils
+#   fi
+# fi
 
 if [[ "$INSTALL_NETWORK_MANAGER" == "yes" ]]; then
   debug "NetworkManager installation requested. Installing components..."
