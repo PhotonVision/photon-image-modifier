@@ -251,6 +251,8 @@ fi
 debug "Updated package list."
 
 apt-cache search ^openjdk-*
+ll /etc/apt/sources.list.d/
+tail -n999 /etc/apt/sources.list.d/*
 
 # install_if_missing curl
 # install_if_missing avahi-daemon
