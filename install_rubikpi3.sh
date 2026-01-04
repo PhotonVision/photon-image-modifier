@@ -98,3 +98,36 @@ runcmd:
 - nmcli radio all off
 - touch /etc/cloud/cloud-init.disabled
 EOFUSERDATA
+
+# Override the automatic fan control and set it to run continuously at full speed
+# Instructions provided by Rami
+
+# 1. Disable the thermal service
+systemctl disable oem-tangshan-rubikpi3-thermal.service
+
+# 2. Create the fan helper script
+cat > /usr/local/sbin/rubik-fan-max.sh << EOF_MAX_FAN
+#!/bin/sh
+hwmon_dir=$(readlink -f /sys/devices/platform/pwm-fan/hwmon/hwmon*)
+echo 0 > "$hwmon_dir/pwm1_enable"
+echo 255 > "$hwmon_dir/pwm1"
+EOF_MAX_FAN
+
+chmod +x /usr/local/sbin/rubik-fan-max.sh
+
+# 3. Add a oneshot systemd unit
+cat > /etc/systemd/system/rubik-fan-max.service << EOF_FAN_SERVICE
+[Unit]
+Description=Force Rubik Pi fan to full speed
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/rubik-fan-max.sh
+
+[Install]
+WantedBy=multi-user.target
+EOF_FAN_SERVICE
+
+# 4. Enable the new service
+systemctl enable rubik-fan-max.service
