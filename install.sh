@@ -111,6 +111,7 @@ if grep -iq "systemcore" /etc/os-release; then
 fi
 
 INSTALL_NETWORK_MANAGER="ask"
+DISABLE_NETWORKING="false"
 VERSION="latest"
 
 while getopts "hlva:mnqt-:" OPT; do
@@ -228,7 +229,7 @@ DISTRO=$(lsb_release -is)
 # i.e. the distro is Ubuntu, you haven't requested disabling networking,
 # and you have requested a quiet install.
 if [[ "$INSTALL_NETWORK_MANAGER" == "ask" ]]; then
-  if [[ "$DISTRO" != "Ubuntu" || -n "$DISABLE_NETWORKING" || -n "$QUIET" ]] ; then
+  if [[ "$DISTRO" != "Ubuntu" || "$DISABLE_NETWORKING" == "true" || -n "$QUIET" ]] ; then
     INSTALL_NETWORK_MANAGER="no"
   fi
 fi
@@ -285,24 +286,6 @@ EOF
 fi
 
 debug ""
-debug "Installing additional math packages"
-if [[ "$DISTRO" = "Ubuntu" && -z $(apt-cache search libcholmod3) ]]; then
-  debug "Adding jammy to list of apt sources"
-  if [[ -z $TEST ]]; then
-    if [[ "$ARCH" = "x86_64" ]]; then
-      add-apt-repository -y -S 'deb http://security.ubuntu.com/ubuntu jammy main universe'
-    else
-      add-apt-repository -y -S 'deb http://ports.ubuntu.com/ubuntu-ports jammy main universe'
-    fi
-  fi
-fi
-
-install_if_missing libcholmod3
-install_if_missing liblapack3
-install_if_missing libsuitesparseconfig5
-
-debug ""
-
 debug "Downloading PhotonVision '$VERSION'..."
 
 if [[ -z $TEST ]]; then
@@ -317,7 +300,6 @@ fi
 debug "Downloaded PhotonVision."
 
 debug "Creating the PhotonVision systemd service..."
-
 
 if [[ -z $TEST ]]; then
   # service --status-all doesn't list photonvision on OrangePi use systemctl instead:
@@ -334,6 +316,8 @@ if [[ -z $TEST ]]; then
   cat > /lib/systemd/system/photonvision.service <<EOF
 [Unit]
 Description=Service that runs PhotonVision
+# Uncomment the next line to have photonvision startup wait for NetworkManager startup
+# After=network.target
 
 [Service]
 WorkingDirectory=/opt/photonvision
@@ -353,8 +337,12 @@ RestartSec=1
 WantedBy=multi-user.target
 EOF
 
-  if [ "$DISABLE_NETWORKING" = "true" ]; then
+  if [[ "$DISABLE_NETWORKING" == "true" ]]; then
+    debug "Adding -n switch to photonvision startup to disable network management"
     sed -i "s/photonvision.jar/photonvision.jar -n/" /lib/systemd/system/photonvision.service
+  else
+    debug "Setting photonvision.service to start after network.target is reached"
+    sed -i "s/# After=network.target/After=network.target/g" /lib/systemd/system/photonvision.service
   fi
 
   if grep -q "RK3588" /proc/cpuinfo; then
