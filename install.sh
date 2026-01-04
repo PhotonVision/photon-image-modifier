@@ -261,7 +261,7 @@ apt-cache search ^openjdk-*
 ls -la /etc/apt/sources.list.d/
 tail -n999 /etc/apt/sources.list.d/*
 
-install_if_missing openjdk-17-jre-headless
+install_if_missing openjdk-25-jre-headless
 
 debug "Setting cpufrequtils to performance mode"
 if [[ -z $TEST ]]; then
