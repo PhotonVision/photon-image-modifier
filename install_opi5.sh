@@ -22,7 +22,7 @@ APT::Color "0";
 Dpkg::Use-Pty "0";
 EOF
 
-apt-get -q update 
+apt-get -q update
 
 before=$(df --output=used / | tail -n1)
 # clean up stuff

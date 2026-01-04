@@ -32,4 +32,3 @@ network:
         name: "eth*"
       dhcp4: true
       optional: true
-

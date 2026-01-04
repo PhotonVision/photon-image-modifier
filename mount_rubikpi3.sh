@@ -9,7 +9,7 @@ sudo apt-get update
 sudo apt-get install -y wget xz-utils
 # If base_image ends with .yaml, treat it as a manifest and skip download
 if [[ "$base_image" == *.yaml ]]; then
- 
+
   # Download and process manifest
   wget -O manifest.yaml "${base_image}"
 
