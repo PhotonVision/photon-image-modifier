@@ -39,7 +39,7 @@ Components: main universe restricted multiverse
 Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
 EOF_UBUNTU_SOURCES
 
-apt-get update
+apt-get -q update
 
 # This needs to run before install.sh to fix some weird dependency issues
 apt-get -y --allow-downgrades install libsqlite3-0=3.45.1-1ubuntu2

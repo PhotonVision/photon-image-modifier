@@ -246,21 +246,17 @@ fi
 
 debug "Updating package list..."
 if [[ -z $TEST ]]; then
-  apt-get update
+  apt-get -q update
 fi
 debug "Updated package list."
 
-apt-cache search ^openjdk-*
-ls -la /etc/apt/sources.list.d/
-tail -n999 /etc/apt/sources.list.d/*
-
-# install_if_missing curl
-# install_if_missing avahi-daemon
-# install_if_missing cpufrequtils
-# install_if_missing libatomic1
-# install_if_missing v4l-utils
-# install_if_missing sqlite3
-install_if_missing openjdk-25-jre-headless
+install_if_missing curl
+install_if_missing avahi-daemon
+install_if_missing cpufrequtils
+install_if_missing libatomic1
+install_if_missing v4l-utils
+install_if_missing sqlite3
+install_if_missing openjdk-17-jre-headless
 
 debug "Setting cpufrequtils to performance mode"
 if [[ -z $TEST ]]; then
