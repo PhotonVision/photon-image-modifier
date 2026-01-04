@@ -18,53 +18,53 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # - name: limelight
-          #   script: ./install_limelight.sh
-          #   base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
-          # - name: limelight3
-          #   script: ./install_limelight3.sh
-          #   base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
-          # - name: limelight3g
-          #   script: ./install_limelight3g.sh
-          #   base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
-          # - name: limelight4
-          #   script: ./install_limelight4.sh
-          #   base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
-          # - name: raspi
-          #   script: ./install_pi.sh
-          #   base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
+          - name: limelight
+            script: ./install_limelight.sh
+            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
+          - name: limelight3
+            script: ./install_limelight3.sh
+            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
+          - name: limelight3g
+            script: ./install_limelight3g.sh
+            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
+          - name: limelight4
+            script: ./install_limelight4.sh
+            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
+          - name: raspi
+            script: ./install_pi.sh
+            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
           - name: raspi_dev
             script: ./install_dev_pi.sh
-            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2025-12-04/2025-12-04-raspios-trixie-arm64-lite.img.xz
-          # - name: snakeyes
-          #   script: ./install_snakeyes.sh
-          #   base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
-          # - name: luma_p1
-          #   script: ./install_luma_p1.sh
-          #   base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
+            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
+          - name: snakeyes
+            script: ./install_snakeyes.sh
+            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
+          - name: luma_p1
+            script: ./install_luma_p1.sh
+            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz
           - name: opi5
             script: ./install_opi5.sh
             base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5.img.xz
-          # - name: opi5b
-          #   script: ./install_opi5.sh
-          #   base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5b.img.xz
-          # - name: opi5plus
-          #   script: ./install_opi5.sh
-          #   base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5-plus.img.xz
-          # - name: opi5pro
-          #   script: ./install_opi5.sh
-          #   base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5-pro.img.xz
-          # - name: opi5max
-          #   script: ./install_opi5.sh
-          #   base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5-max.img.xz
-          # - name: rock5c
-          #   script: ./install_opi5.sh
-          #   base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-rock-5c.img.xz
-          # - name: rubikpi3
-          #   script: ./install_rubikpi3.sh
-          #   base_image: https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x01/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20250926-145.yaml
-          #   root_location: "offset=569376768"
-          #   shrink_image: "no"
+          - name: opi5b
+            script: ./install_opi5.sh
+            base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5b.img.xz
+          - name: opi5plus
+            script: ./install_opi5.sh
+            base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5-plus.img.xz
+          - name: opi5pro
+            script: ./install_opi5.sh
+            base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5-pro.img.xz
+          - name: opi5max
+            script: ./install_opi5.sh
+            base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5-max.img.xz
+          - name: rock5c
+            script: ./install_opi5.sh
+            base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-rock-5c.img.xz
+          - name: rubikpi3
+            script: ./install_rubikpi3.sh
+            base_image: https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x01/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20250926-145.yaml
+            root_location: "offset=569376768"
+            shrink_image: "no"
 
     name: "Build for ${{ matrix.name }}"
 
