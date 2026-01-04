@@ -24,11 +24,22 @@ chmod 0440 /etc/sudoers.d/010_pi-nopasswd
 echo "pi:raspberry" | chpasswd
 
 # silence log spam from dpkg
-cat > /etc/apt/apt.conf.d/99dpkg.conf << EOF
+cat > /etc/apt/apt.conf.d/99dpkg.conf << EOF_DPKG
 Dpkg::Progress-Fancy "0";
 APT::Color "0";
 Dpkg::Use-Pty "0";
-EOF
+EOF_DPKG
+
+# Make sure all the sources are available for apt
+cat > /etc/apt/sources.list.d/ubuntu.sources << EOF_UBUNTU_SOURCES
+Types: deb
+URIs: http://ports.ubuntu.com/ubuntu-ports
+Suites: noble noble-updates noble-backports
+Components: main universe restricted multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+EOF_UBUNTU_SOURCES
+
+apt-get update
 
 # This needs to run before install.sh to fix some weird dependency issues
 apt-get -y --allow-downgrades install libsqlite3-0=3.45.1-1ubuntu2
