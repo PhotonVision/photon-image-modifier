@@ -107,7 +107,7 @@ jobs:
             chmod +x "./install_common.sh"
             "./install_common.sh"
 
-    - name: Compress built image 
+    - name: Compress built image
       # Compress the standard images
       if: ${{ ! startsWith(matrix.name, 'rubik') }}
       run: |
@@ -115,7 +115,7 @@ jobs:
         sudo xz -T 0 -v photonvision_${{ matrix.name }}.img
         echo "artifact=photonvision_${{ matrix.name }}.img.xz" >> "$GITHUB_ENV"
 
-    - name: Tar built image 
+    - name: Tar built image
       # Build the RubikPi3-specific tar file
       if: ${{ startsWith(matrix.name, 'rubik') }}
       run: |
