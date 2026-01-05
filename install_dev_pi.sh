@@ -34,7 +34,7 @@ sudo apt-get update
 apt-get install -y device-tree-compiler
 apt-get install -y network-manager net-tools
 # libcamera-driver stuff
-apt-get install -y libegl1 libopengl0 libgl1-mesa-dri libgbm1 libegl1-mesa-dev libcamera-dev cmake build-essential libdrm-dev libgbm-dev default-jdk openjdk-17-jdk
+apt-get install -y libegl1 libopengl0 libgl1-mesa-dri libgbm1 libegl1-mesa-dev libcamera-dev cmake build-essential libdrm-dev libgbm-dev default-jdk openjdk-25-jdk
 
 # Remove extra packages too
 # echo "Purging extra things"
