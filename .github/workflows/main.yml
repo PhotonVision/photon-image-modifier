@@ -98,6 +98,7 @@ jobs:
         minimum_free_mb: 2000
         image_url: ${{ matrix.base_image }}
         root_location: ${{ matrix.root_location || 'partition=2' }}
+        boot_partition:
         shrink_image: ${{ matrix.shrink_image || 'yes' }}
         commands: |
             set -e
