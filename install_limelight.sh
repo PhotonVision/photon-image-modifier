@@ -3,6 +3,11 @@
 # Exit on errors, print commands, ignore unset variables
 set -ex +u
 
+# mount partition 1 as /boot/firmware
+mkdir --parent /boot/firmware
+mount "${loopdev}p1" /boot/firmware
+ls -la /boot/firmware
+
 # silence log spam from dpkg
 cat > /etc/apt/apt.conf.d/99dpkg.conf << EOF
 Dpkg::Progress-Fancy "0";
@@ -15,11 +20,11 @@ chmod +x ./install.sh
 ./install.sh --install-nm=yes --arch=aarch64 --version="$1"
 
 # edit boot partition
-install -m 644 limelight/config.txt /boot/
-install -m 644 userconf.txt /boot/
+install -m 644 limelight/config.txt /boot/firmware/
+install -m 644 userconf.txt /boot/firmware/
 
 # install LL DTS
-dtc -O dtb limelight/gloworm-dt.dts -o /boot/dt-blob.bin
+dtc -O dtb limelight/gloworm-dt.dts -o /boot/firmware/dt-blob.bin
 
 # Kill wifi and other networking things
 install -v -m 644 -D -t /etc/systemd/system/dhcpcd.service.d/ files/wait.conf
@@ -45,3 +50,5 @@ apt-get clean
 
 rm -rf /usr/share/doc
 rm -rf /usr/share/locale/
+
+umount /boot/firmware
