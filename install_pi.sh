@@ -3,6 +3,11 @@
 # Exit on errors, print commands, ignore unset variables
 set -ex +u
 
+# mount partition 1 as /boot/firmware
+mkdir --parent /boot/firmware
+mount "${loopdev}p1" /boot/firmware
+ls -la /boot/firmware
+
 # silence log spam from dpkg
 cat > /etc/apt/apt.conf.d/99dpkg.conf << EOF
 Dpkg::Progress-Fancy "0";
@@ -12,11 +17,11 @@ EOF
 
 # Run normal photon installer
 chmod +x ./install.sh
-./install.sh -v "$1" --install-nm=yes --arch=aarch64 --version="$1"
+./install.sh --install-nm=yes --arch=aarch64 --version="$1"
 
 # and edit boot partition
-install -m 644 config.txt /boot/
-install -m 644 userconf.txt /boot/
+install -m 644 config.txt /boot/firmware
+install -m 644 userconf.txt /boot/firmware
 
 # configure hostname
 echo "photonvision" > /etc/hostname
@@ -46,3 +51,5 @@ apt-get clean
 
 rm -rf /usr/share/doc
 rm -rf /usr/share/locale/
+
+umount /boot/firmware
