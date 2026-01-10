@@ -104,7 +104,7 @@ jobs:
             set -e
             echo "Running ${{ matrix.script }}"
             chmod +x "${{ matrix.script }}"
-            "./${{ matrix.script }}"
+            "./${{ matrix.script }}" "Dev"
             echo "Running install_common.sh"
             chmod +x "./install_common.sh"
             "./install_common.sh"
