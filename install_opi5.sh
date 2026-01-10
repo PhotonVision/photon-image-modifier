@@ -3,6 +3,11 @@
 # Exit on errors, print commands, ignore unset variables
 set -ex +u
 
+# mount partition 1 as /CIDATA
+mkdir --parent /CIDATA
+mount "${loopdev}p1" /CIDATA
+ls -la /CIDATA
+
 # Create pi/raspberry login
 if id "pi" >/dev/null 2>&1; then
     echo 'user found'
@@ -62,9 +67,9 @@ apt-get --yes -qq install libc6 libstdc++6
 rm -f /etc/netplan/00-default-nm-renderer.yaml
 
 # set NetworkManager as the renderer in cloud-init
-cp -f ./OPi5_CIDATA/network-config /boot/network-config
+cp -f ./OPi5_CIDATA/network-config /CIDATA/network-config
 # add customized user-data file for cloud-init
-cp -f ./OPi5_CIDATA/user-data /boot/user-data
+cp -f ./OPi5_CIDATA/user-data /CIDATA/user-data
 
 # modify photonvision.service to enable big cores
 sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
@@ -96,3 +101,5 @@ apt-get --yes -qq clean
 
 rm -rf /usr/share/doc
 rm -rf /usr/share/locale/
+
+umount /CIDATA
