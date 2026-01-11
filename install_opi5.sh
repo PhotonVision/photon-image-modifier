@@ -71,6 +71,11 @@ cp -f ./OPi5_CIDATA/network-config /CIDATA/network-config
 # add customized user-data file for cloud-init
 cp -f ./OPi5_CIDATA/user-data /CIDATA/user-data
 
+# configure GPIO line names
+dtc -@ -I dts -O dtb -o /usr/lib/firmware/*-rockchip/device-tree/rockchip/overlay/rk3588-line-names.dtbo ./files/rk3588-line-names.dtso
+echo "U_BOOT_FDT_OVERLAYS=\"device-tree/rockchip/overlay/rk3588-line-names.dtbo\"" > /usr/share/u-boot-menu/conf.d/rk3588-line-names.conf
+sudo u-boot-update
+
 # modify photonvision.service to enable big cores
 sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
 cp -f /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
