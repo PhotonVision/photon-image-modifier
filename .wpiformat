@@ -1,3 +1,7 @@
 generatedFileExclude {
   .sqlite
 }
+
+modifiableFileExclude {
+  /files/rk3588-line-names.dtso
+}
