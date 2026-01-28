@@ -26,6 +26,9 @@ dtoverlay=vc4-kms-v3d
 dtparam=spi=on
 dtparam=audio=off
 
+# Enable hardware PWM for LED control
+dtoverlay=pwm-2chan,pin=18,func=2,pin2=13,func2=4
+
 max_framebuffers=2
 
 # Run in 64-bit mode

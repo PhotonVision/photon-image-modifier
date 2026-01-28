@@ -23,6 +23,10 @@ chmod +x ./install.sh
 install -m 644 limelight/config.txt /boot/firmware/
 install -m 644 userconf.txt /boot/firmware/
 
+# link old config.txt location for diozero compatibility
+# TODO(thatcomputerguy0101): Remove this when diozero checks the new location
+ln -sf /boot/firmware/config.txt /boot/config.txt
+
 # install LL DTS
 dtc -O dtb limelight/gloworm-dt.dts -o /boot/firmware/dt-blob.bin
 
