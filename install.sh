@@ -252,20 +252,25 @@ debug "Updated package list."
 
 install_if_missing curl
 install_if_missing avahi-daemon
-install_if_missing cpufrequtils
+# install_if_missing cpufrequtils
 install_if_missing libatomic1
 install_if_missing v4l-utils
 install_if_missing sqlite3
-install_if_missing openjdk-17-jre-headless
 
-debug "Setting cpufrequtils to performance mode"
-if [[ -z $TEST ]]; then
-  if [ -f /etc/default/cpufrequtils ]; then
-      sed -i -e 's/^#\?GOVERNOR=.*$/GOVERNOR=performance/' /etc/default/cpufrequtils
-  else
-      echo 'GOVERNOR=performance' > /etc/default/cpufrequtils
-  fi
-fi
+apt-cache search ^openjdk-*
+ls -la /etc/apt/sources.list.d/
+tail -n999 /etc/apt/sources.list.d/*
+
+install_if_missing openjdk-25-jre-headless
+
+# debug "Setting cpufrequtils to performance mode"
+# if [[ -z $TEST ]]; then
+#   if [ -f /etc/default/cpufrequtils ]; then
+#       sed -i -e 's/^#\?GOVERNOR=.*$/GOVERNOR=performance/' /etc/default/cpufrequtils
+#   else
+#       echo 'GOVERNOR=performance' > /etc/default/cpufrequtils
+#   fi
+# fi
 
 if [[ "$INSTALL_NETWORK_MANAGER" == "yes" ]]; then
   debug "NetworkManager installation requested. Installing components..."
