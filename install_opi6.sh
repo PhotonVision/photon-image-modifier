@@ -3,18 +3,6 @@
 # Exit on errors, print commands, ignore unset variables
 set -ex +u
 
-# Create photon/vision login
-if id "photon" >/dev/null 2>&1; then
-    echo 'user found'
-else
-    echo "creating photon user"
-    useradd photon -m -b /home -s /bin/bash
-    usermod -a -G sudo photon
-    echo 'photon ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/010_photon-nopasswd >/dev/null
-    chmod 0440 /etc/sudoers.d/010_photon-nopasswd
-fi
-echo "photon:vision" | chpasswd
-
 # change hostname
 sed -i 's/orangepi6plus/photonvision/g' /etc/hostname
 sed -i 's/orangepi6plus/photonvision/g' /etc/hosts
