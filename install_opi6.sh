@@ -3,17 +3,17 @@
 # Exit on errors, print commands, ignore unset variables
 set -ex +u
 
-# Create pi/raspberry login
-if id "pi" >/dev/null 2>&1; then
+# Create photon/vision login
+if id "photon" >/dev/null 2>&1; then
     echo 'user found'
 else
-    echo "creating pi user"
-    useradd pi -m -b /home -s /bin/bash
-    usermod -a -G sudo pi
-    echo 'pi ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/010_pi-nopasswd >/dev/null
-    chmod 0440 /etc/sudoers.d/010_pi-nopasswd
+    echo "creating photon user"
+    useradd photon -m -b /home -s /bin/bash
+    usermod -a -G sudo photon
+    echo 'photon ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/010_photon-nopasswd >/dev/null
+    chmod 0440 /etc/sudoers.d/010_photon-nopasswd
 fi
-echo "pi:raspberry" | chpasswd
+echo "photon:vision" | chpasswd
 
 # change hostname
 sed -i 's/orangepi6plus/photonvision/g' /etc/hostname
@@ -37,6 +37,7 @@ apt-get --yes autoremove --allow-change-held-packages --purge
 systemctl set-default multi-user.target
 
 # remove CIX vendorium that isn't used currently
+# we may want to revisit purging some of this stuff later
 rm -rf /usr/lib/cix
 rm -rf /usr/share/cix
 rm -rf /opt/sd-demo-streamlit
@@ -56,6 +57,7 @@ echo "Installing additional things"
 apt-get --yes -qq install libc6 libstdc++6
 
 # modify photonvision.service to enable big cores
+# For reasons beyond human comprehension, the little cores are on 2, 3, 4, and 5. 
 sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=0,1,6-11/g' /lib/systemd/system/photonvision.service
 cp -f /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
 chmod 644 /etc/systemd/system/photonvision.service
