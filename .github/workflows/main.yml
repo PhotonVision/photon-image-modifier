@@ -84,9 +84,11 @@ jobs:
         root_location: ${{ matrix.root_location || 'partition=2' }}
         shrink_image: ${{ matrix.shrink_image || 'yes' }}
         commands: |
+            df -h
             echo "Running ${{ matrix.script }}"
             chmod +x "${{ matrix.script }}"
             "./${{ matrix.script }}"
+            df -h
             echo "Running install_common.sh"
             chmod +x "./install_common.sh"
             "./install_common.sh"
