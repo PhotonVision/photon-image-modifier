@@ -59,7 +59,7 @@ jobs:
           #  script: ./install_opi5.sh
           #  base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5-max.img.xz
           - name: opi6plus
-            script: ./install_opi5.sh
+            script: ./install_opi6.sh
             base_image: https://sidequests.reduxrobotics.com/opi6/Orangepi6plus_1.0.2_debian_bookworm_desktop_gnome_linux6.6.89.img.xz
           #- name: rock5c
           #  script: ./install_opi5.sh
