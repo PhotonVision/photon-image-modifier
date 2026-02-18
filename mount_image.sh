@@ -145,14 +145,14 @@ if [[ "${free_space}" =~ "free" ]]; then
     initial_image_size=$(stat -L --printf="%s" "${image}")
     image_size=$(echo "${free_space}" | awk -F ":" '{print $2}' | tr -d 'B')
     if [[ "${part_type}" == "gpt" ]]; then
-        # for GPT partition table, leave space at the end for the secondary GPT 
+        # for GPT partition table, leave space at the end for the secondary GPT
         # it requires 33 sectors, which is 16896 bytes
         image_size=$((image_size + 16896))
-    fi            
+    fi
     echo "Shrinking image from ${initial_image_size} to ${image_size} bytes."
     truncate -s "${image_size}" "${image}"
     if [[ "${part_type}" == "gpt" ]]; then
-        # use sgdisk to fix the secondary GPT after truncation 
+        # use sgdisk to fix the secondary GPT after truncation
         sgdisk -e "${image}"
     fi
 fi
