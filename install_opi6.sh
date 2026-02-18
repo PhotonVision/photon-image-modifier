@@ -32,14 +32,14 @@ before=$(df --output=used / | tail -n1)
 # clean up stuff
 
 # remove the entire GUI and boot to console
-apt-get --yes purge task-desktop chromium qt7* gnome-*
-apt-get --yes autoremove --purge
+apt-get --yes purge --allow-change-held-packages -q task-desktop chromium qt7* gnome-*
+apt-get --yes autoremove --allow-change-held-packages --purge
 systemctl set-default multi-user.target
 
 # remove CIX vendorium that isn't used currently
 rm -rf /usr/lib/cix
 
-apt-get --yes -q autoremove
+apt-get --yes -q autoremove --allow-change-held-packages
 
 after=$(df --output=used / | tail -n1)
 freed=$(( before - after ))
