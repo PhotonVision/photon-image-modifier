@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# Exit on errors, print commands, ignore unset variables
+set -ex +u
+
+# Create pi/raspberry login
+if id "pi" >/dev/null 2>&1; then
+    echo 'user found'
+else
+    echo "creating pi user"
+    useradd pi -m -b /home -s /bin/bash
+    usermod -a -G sudo pi
+    echo 'pi ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/010_pi-nopasswd >/dev/null
+    chmod 0440 /etc/sudoers.d/010_pi-nopasswd
+fi
+echo "pi:raspberry" | chpasswd
+
+# change hostname
+sed -i 's/orangepi6plus/photonvision/g' /etc/hostname
+sed -i 's/orangepi6plus/photonvision/g' /etc/hosts
+
+# silence log spam from dpkg
+cat > /etc/apt/apt.conf.d/99dpkg.conf << EOF
+Dpkg::Progress-Fancy "0";
+APT::Color "0";
+Dpkg::Use-Pty "0";
+EOF
+
+apt-get -q update
+
+before=$(df --output=used / | tail -n1)
+# clean up stuff
+
+# remove the entire GUI and boot to console
+apt-get --yes purge task-desktop chromium qt7* gnome-*
+apt-get --yes autoremove --purge
+systemctl set-default multi-user.target
+
+# remove CIX vendorium that isn't used currently
+rm -rf /usr/lib/cix
+
+apt-get --yes -q autoremove
+
+after=$(df --output=used / | tail -n1)
+freed=$(( before - after ))
+echo "Freed up $freed KiB"
+
+# run Photonvision install script
+chmod +x ./install.sh
+./install.sh --install-nm=yes --arch=aarch64 --version="$1"
+
+echo "Installing additional things"
+apt-get --yes -qq install libc6 libstdc++6
+
+# modify photonvision.service to enable big cores
+sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=0,1,6-11/g' /lib/systemd/system/photonvision.service
+cp -f /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
+chmod 644 /etc/systemd/system/photonvision.service
+cat /etc/systemd/system/photonvision.service
+
+# networkd isn't being used, this causes an unnecessary delay
+systemctl disable systemd-networkd-wait-online.service
+
+# PhotonVision server is managing the network, so it doesn't need to wait for online
+systemctl disable NetworkManager-wait-online.service
+
+# disable bluetooth
+# instead of keeping a catalog of these services, find them based on a pattern and mask them
+btservices=$(systemctl list-unit-files *bluetooth.service | tail -n +2 | head -n -1 | awk '{print $1}')
+for btservice in $btservices; do
+    echo "Masking: $btservice"
+    systemctl mask "$btservice"
+done
+
+rm -rf /var/lib/apt/lists/*
+apt-get --yes -qq clean
+
+rm -rf /usr/share/doc
+rm -rf /usr/share/locale/
