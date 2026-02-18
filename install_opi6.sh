@@ -45,7 +45,7 @@ echo "Installing additional things"
 apt-get --yes -qq install libc6 libstdc++6
 
 # modify photonvision.service to enable big cores
-# For reasons beyond human comprehension, the little cores are on 2, 3, 4, and 5. 
+# For reasons beyond human comprehension, the little cores are on 2, 3, 4, and 5.
 sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=0,1,6-11/g' /lib/systemd/system/photonvision.service
 cp -f /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
 chmod 644 /etc/systemd/system/photonvision.service
