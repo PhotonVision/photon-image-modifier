@@ -47,7 +47,10 @@ systemctl disable systemd-networkd-wait-online.service
 # PhotonVision server is managing the network, so it doesn't need to wait for online
 systemctl disable NetworkManager-wait-online.service
 
-# there's no iternal bluetooth or wifi on the opi6plus 
+# there's no internal bluetooth or wifi on the opi6plus
+
+# there's also no...preinstalled ssh keys.
+ssh-keygen -A
 
 rm -rf /var/lib/apt/lists/*
 apt-get --yes -qq clean
