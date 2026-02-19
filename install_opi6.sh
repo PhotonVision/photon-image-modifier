@@ -20,7 +20,9 @@ before=$(df --output=used / | tail -n1)
 # clean up stuff
 
 # remove the entire GUI and boot to console
-apt-get --yes purge --allow-change-held-packages -q task-desktop task-gnome-desktop chromium qt7* gnome-* libwebkit2gtk*
+apt-get --yes purge --allow-change-held-packages -q \
+    task-desktop task-gnome-desktop chromium qt7* gnome-* libwebkit2gtk* \
+    libllvm15 libjavascriptcoregtk* docker-ce gcc-12 git libgtk* gnome*
 apt-get --yes autoremove --allow-change-held-packages --purge
 systemctl set-default multi-user.target
 
