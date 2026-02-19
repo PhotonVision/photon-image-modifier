@@ -19,21 +19,9 @@ apt-get -q update
 before=$(df --output=used / | tail -n1)
 # clean up stuff
 
-# remove the entire GUI and boot to console
-apt-get --yes purge --allow-change-held-packages -q \
-    task-desktop task-gnome-desktop chromium qt7* gnome-* libwebkit2gtk* \
-    libllvm15 libjavascriptcoregtk* docker-ce gcc-12 git libgtk* gnome*
+# remove build-essential for minor space savings
+apt-get --yes purge --allow-change-held-packages -q *-dev git
 apt-get --yes autoremove --allow-change-held-packages --purge
-systemctl set-default multi-user.target
-
-# remove CIX vendorium that isn't used currently
-# we may want to revisit purging some of this stuff later
-rm -rf /usr/lib/cix
-rm -rf /usr/share/cix
-rm -rf /opt/sd-demo-streamlit
-rm -rf /opt/balenaEtcher
-
-apt-get --yes -q autoremove --allow-change-held-packages
 
 after=$(df --output=used / | tail -n1)
 freed=$(( before - after ))
@@ -59,13 +47,7 @@ systemctl disable systemd-networkd-wait-online.service
 # PhotonVision server is managing the network, so it doesn't need to wait for online
 systemctl disable NetworkManager-wait-online.service
 
-# disable bluetooth
-# instead of keeping a catalog of these services, find them based on a pattern and mask them
-btservices=$(systemctl list-unit-files *bluetooth.service | tail -n +2 | head -n -1 | awk '{print $1}')
-for btservice in $btservices; do
-    echo "Masking: $btservice"
-    systemctl mask "$btservice"
-done
+# there's no iternal bluetooth or wifi on the opi6plus 
 
 rm -rf /var/lib/apt/lists/*
 apt-get --yes -qq clean
