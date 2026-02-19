@@ -74,7 +74,10 @@ jobs:
         fetch-depth: 0
     - name: Fetch tags
       run: git fetch --tags --force
-
+    - name: Free disk space
+      run: |
+        sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+        df -h
     - name: Generate version file
       run: |
 
