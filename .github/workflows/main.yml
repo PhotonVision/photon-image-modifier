@@ -1,7 +1,7 @@
 name: Build driver
 on:
   push:
-    branches: [ main guinea/opi6plus ]
+    branches: [ main ]
     tags:
       - 'v*'
   pull_request:
