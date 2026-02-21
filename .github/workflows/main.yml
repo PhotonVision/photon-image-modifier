@@ -158,6 +158,8 @@ jobs:
         path: ${{ env.artifact }}
         if-no-files-found: error
         retention-days: 1
+    - run: df -h
+      if: always()
 
   release:
     needs: [build]
