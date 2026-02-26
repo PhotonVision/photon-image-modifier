@@ -257,6 +257,7 @@ install_if_missing libatomic1
 install_if_missing v4l-utils
 install_if_missing sqlite3
 install_if_missing openjdk-17-jre-headless
+install_if_missing usbtop
 
 debug "Setting cpufrequtils to performance mode"
 if [[ -z $TEST ]]; then
