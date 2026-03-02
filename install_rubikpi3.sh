@@ -3,9 +3,6 @@
 # Exit on errors, print commands, ignore unset variables
 set -ex +u
 
-# echo "Packages that are on the base image"
-# dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -nr
-
 cd /tmp/build
 echo '=== Current directory: $(pwd) ==='
 echo '=== Files in current directory: ==='
@@ -61,7 +58,7 @@ df -h
 echo "Purging snaps"
 rm -rf /var/lib/snapd/seed/snaps/*
 rm -f /var/lib/snapd/seed/seed.yaml
-apt-get purge --yes lxd-installer lxd-agent-loader snapd gdb gcc g++ linux-headers* libgcc*-dev perl-modules* git vim-runtime python3-twisted sosreport
+apt-get purge --yes lxd-installer lxd-agent-loader snapd gdb gcc g++ linux-headers* libgcc*-dev perl-modules* git vim-runtime python3-twisted sosreport bluez
 apt-get autoremove --yes
 
 rm -rf /var/lib/apt/lists/*
@@ -91,13 +88,6 @@ cat /etc/systemd/system/photonvision.service
 
 # networkd isn't being used, this causes an unnecessary delay
 systemctl disable systemd-networkd-wait-online.service
-
-# PhotonVision server is managing the network, so it doesn't need to wait for online
-# systemctl disable NetworkManager-wait-online.service
-
-# Disable Bluetooth
-sed -i 's/^AutoEnable=.*/AutoEnable=false/g' /etc/bluetooth/main.conf
-systemctl disable bluetooth.service
 
 # set the hostname during cloud-init and disable cloud-init after first boot
 cat >> /var/lib/cloud/seed/nocloud/user-data << EOFUSERDATA
@@ -144,9 +134,6 @@ systemctl enable rubik-fan-max.service
 
 echo "Space available before purging things"
 df -h /dev/loop0
-
-# echo 'GRUB_CMDLINE_LINUX="${GRUB_CMDLINE_LINUX} dyndbg=\"file drivers/base/firmware_loader/main.c +fmp\" "' > /etc/default/grub.d/50-log-loaded-firmware.cfg
-# update-grub
 
 rm -rf /var/lib/apt/lists/*
 df -h /dev/loop0
