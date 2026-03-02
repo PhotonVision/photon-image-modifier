@@ -145,8 +145,8 @@ systemctl enable rubik-fan-max.service
 echo "Space available before purging things"
 df -h /dev/loop0
 
-echo 'GRUB_CMDLINE_LINUX="${GRUB_CMDLINE_LINUX} dyndbg=\"file drivers/base/firmware_loader/main.c +fmp\" "' > /etc/default/grub.d/50-log-loaded-firmware.cfg
-update-grub
+# echo 'GRUB_CMDLINE_LINUX="${GRUB_CMDLINE_LINUX} dyndbg=\"file drivers/base/firmware_loader/main.c +fmp\" "' > /etc/default/grub.d/50-log-loaded-firmware.cfg
+# update-grub
 
 rm -rf /var/lib/apt/lists/*
 df -h /dev/loop0
