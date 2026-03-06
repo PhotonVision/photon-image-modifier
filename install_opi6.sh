@@ -3,6 +3,8 @@
 # Exit on errors, print commands, ignore unset variables
 set -ex +u
 
+ffmpeg -encoders
+
 # change hostname
 sed -i 's/orangepi6plus/photonvision/g' /etc/hostname
 sed -i 's/orangepi6plus/photonvision/g' /etc/hosts
