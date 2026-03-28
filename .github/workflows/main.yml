@@ -149,9 +149,9 @@ jobs:
         # tar --list --file=${target}.tar.xz
         echo "artifact=${target}.tar.xz" >> "$GITHUB_ENV"
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
-        name: ${{ env.artifact }}
+        archive: false
         path: ${{ env.artifact }}
         if-no-files-found: error
         retention-days: 1
@@ -161,7 +161,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       # Download literally every single artifact
-      - uses: actions/download-artifact@v4.1.8
+      - uses: actions/download-artifact@v8
       - run: find
       # Push to dev release and/or to a real release if tagged using semantic versioning
       # See https://github.com/pyTooling/Actions/tree/dev/releaser
