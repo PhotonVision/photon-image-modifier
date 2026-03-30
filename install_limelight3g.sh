@@ -16,6 +16,6 @@ ls -la /boot/firmware
 install -m 644 limelight3g/config.txt /boot/firmware
 
 # Add the one extra file for the LL3
-wget https://datasheets.raspberrypi.org/cmio/dt-blob-cam1.bin -O /boot/firmware/dt-blob.bin
+wget https://datasheets.raspberrypi.com/cmio/dt-blob-cam1.bin -O /boot/firmware/dt-blob.bin
 
 umount /boot/firmware
