@@ -19,7 +19,4 @@ install -m 644 limelight3/config.txt /boot/firmware/
 # TODO(thatcomputerguy0101): Remove this when diozero checks the new location
 ln -sf /boot/firmware/config.txt /boot/config.txt
 
-# Add the one extra file for the LL3
-wget https://datasheets.raspberrypi.com/cmio/dt-blob-cam1.bin -O /boot/firmware/dt-blob.bin
-
 umount /boot/firmware

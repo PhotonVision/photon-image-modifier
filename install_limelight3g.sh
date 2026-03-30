@@ -15,7 +15,4 @@ ls -la /boot/firmware
 # Install our new config.txt with OV9281 overlay
 install -m 644 limelight3g/config.txt /boot/firmware
 
-# Add the one extra file for the LL3
-wget https://datasheets.raspberrypi.com/cmio/dt-blob-cam1.bin -O /boot/firmware/dt-blob.bin
-
 umount /boot/firmware
