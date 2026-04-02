@@ -99,6 +99,16 @@ runcmd:
 - touch /etc/cloud/cloud-init.disabled
 EOFUSERDATA
 
+# This udev rule is a workaround for a quirk in the Rubik Pi 3's USB controller that causes the camera to be assigned a different path on each boot, which breaks PhotonVision's ability to find it. This rule creates a consistent symlink for the camera and removes the old ones.
+cat >> /etc/udev/rules.d/67-camera-path-fix.rules << EOFUDEV
+SUBSYSTEM=="video4linux", ENV{ID_PATH}=="platform-xhci-hcd.0.auto-usb-0:1:1.0", \
+  ENV{ID_PATH}="platform-xhci-hcd.1.auto-usb-0:1:1.0", \
+  ENV{ID_PATH_TAG}="platform-xhci-hcd_1_auto-usb-0_1_1_0", \
+  ENV{ID_PATH_WITH_USB_REVISION}="platform-xhci-hcd.1.auto-usbv2-0:1:1.0", \
+  SYMLINK+="v4l/by-path/platform-xhci-hcd.1.auto-usb-0:1:1.0-video-index$attr{index}", \
+  RUN+="/bin/rm -f /dev/v4l/by-path/platform-xhci-hcd.0.auto-usb-0:1:1.0-video-index$attr{index} /dev/v4l/by-path/platform-xhci-hcd.0.auto-usbv2-0:1:1.0-video-index$attr{index}"
+EOFUDEV
+
 # Override the automatic fan control and set it to run continuously at full speed
 # Instructions provided by Rami
 
