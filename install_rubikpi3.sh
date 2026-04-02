@@ -109,6 +109,23 @@ SUBSYSTEM=="video4linux", ENV{ID_PATH}=="platform-xhci-hcd.0.auto-usb-0:1:1.0", 
   RUN+="/bin/rm -f /dev/v4l/by-path/platform-xhci-hcd.0.auto-usb-0:1:1.0-video-index$attr{index} /dev/v4l/by-path/platform-xhci-hcd.0.auto-usbv2-0:1:1.0-video-index$attr{index}"
 EOFUDEV
 
+# One-shot to make sure the udev rule is applied on the first boot, since the camera is settled before udev starts.
+
+cat >> /etc/systemd/system/apply-camera-udev.service << EOF_UDEV_ONESHOT
+[Unit]
+Description=Retrigger v4l udev rules after udev is settled
+After=systemd-udev-settle.service
+Before=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/udevadm trigger --action=add --subsystem-match=video4linux
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF_UDEV_ONESHOT
+
 # Override the automatic fan control and set it to run continuously at full speed
 # Instructions provided by Rami
 
