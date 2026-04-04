@@ -19,6 +19,4 @@ install -m 644 limelight3/config.txt /boot/firmware/
 # TODO(thatcomputerguy0101): Remove this when diozero checks the new location
 ln -sf /boot/firmware/config.txt /boot/config.txt
 
-cp limelight3/dt-blob.bin /boot/firmware/dt-blob.bin
-
 umount /boot/firmware

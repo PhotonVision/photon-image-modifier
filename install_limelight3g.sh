@@ -15,6 +15,4 @@ ls -la /boot/firmware
 # Install our new config.txt with OV9281 overlay
 install -m 644 limelight3g/config.txt /boot/firmware
 
-cp limelight3/dt-blob.bin /boot/firmware/dt-blob.bin
-
 umount /boot/firmware

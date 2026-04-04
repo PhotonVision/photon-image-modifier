@@ -35,7 +35,6 @@ arm_boost=1
 ### Comment out (add a # ) to camera_auto_detect=1, and uncomment the line for
 ### the sensor you're trying to user
 
-# camera_auto_detect=1
 
 # dtoverlay=imx290,clock-frequency=74250000
 # dtoverlay=imx290,clock-frequency=37125000
