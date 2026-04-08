@@ -72,7 +72,7 @@ cp -f ./OPi5_CIDATA/network-config /CIDATA/network-config
 cp -f ./OPi5_CIDATA/user-data /CIDATA/user-data
 
 # configure GPIO line names
-dtc -@ -I dts -O dtb -o /usr/lib/firmware/*-rockchip/device-tree/rockchip/overlay/rk3588-line-names.dtbo ./files/rk3588-line-names.dtso
+dtc -@ -I dts -O dtb -o $(echo /usr/lib/firmware/*-rockchip)/device-tree/rockchip/overlay/rk3588-line-names.dtbo ./files/rk3588-line-names.dtso
 echo "U_BOOT_FDT_OVERLAYS=\"device-tree/rockchip/overlay/rk3588-line-names.dtbo\"" > /usr/share/u-boot-menu/conf.d/rk3588-line-names.conf
 u-boot-update
 
