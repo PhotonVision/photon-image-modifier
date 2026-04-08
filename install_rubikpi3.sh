@@ -75,7 +75,7 @@ chmod +x ./install.sh
 ./install.sh --install-nm=yes --arch=aarch64 --version="$1"
 
 # Install packages from the RUBIK Pi PPA, we skip calling apt-get update here because install.sh already does that
-apt-get -y install libqnn1 libsnpe1 qcom-adreno1 device-tree-compiler
+apt-get -y install libqnn1 libsnpe1 qcom-adreno1 device-tree-compiler openjdk-21-jre-headless
 
 # Enable ssh
 systemctl enable ssh
