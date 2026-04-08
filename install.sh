@@ -262,7 +262,7 @@ install_if_missing avahi-daemon
 install_if_missing libatomic1
 install_if_missing v4l-utils
 install_if_missing sqlite3
-install_if_missing openjdk-17-jre-headless
+install_if_missing openjdk-21-jre-headless
 install_if_missing usbtop
 
 debug "Adding cpu governor service"
