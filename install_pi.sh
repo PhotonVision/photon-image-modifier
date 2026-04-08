@@ -20,7 +20,15 @@ chmod +x ./install.sh
 ./install.sh --install-nm=yes --arch=aarch64 --version="$1"
 
 # and edit boot partition
-install -m 644 config.txt /boot/firmware
+
+if [ -n "${2:-}" ]; then
+    config="$2"
+else
+    config="config.txt"
+fi
+
+
+install -m 644 $config /boot/firmware
 install -m 644 userconf.txt /boot/firmware
 
 # configure hostname
