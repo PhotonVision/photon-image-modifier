@@ -14,14 +14,6 @@ ls -la
 echo "options iris_vpu msm_fw_debug=0x18" > /etc/modprobe.d/iris_vpu.conf
 
 ln -sf libOpenCL.so.1 /usr/lib/aarch64-linux-gnu/libOpenCL.so # Fix for snpe-tools
-# Create user pi:raspberry login
-echo "creating pi user"
-useradd pi -m -b /home -s /bin/bash
-usermod -a -G sudo pi
-echo 'pi ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/010_pi-nopasswd >/dev/null
-chmod 0440 /etc/sudoers.d/010_pi-nopasswd
-
-echo "pi:raspberry" | chpasswd
 
 # silence log spam from dpkg
 cat > /etc/apt/apt.conf.d/99dpkg.conf << EOF_DPKG
