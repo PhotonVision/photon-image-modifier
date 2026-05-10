@@ -91,7 +91,7 @@ jobs:
         echo "$json_string" > image-version.json
 
     - name: Install dependencies and build image
-      uses: photonvision/photon-image-runner@HEAD
+      uses: photonvision/photon-image-runner@v1.3.0
       id: install_deps
       env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
