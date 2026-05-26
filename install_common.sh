@@ -33,8 +33,4 @@ echo "Banner /etc/issue.net" > /etc/ssh/sshd_config.d/90_PhotonVisionBanner.conf
 # Add photon version file
 mkdir -p /opt/photonvision/
 
-# Keep this for legacy purposes
-# DEPRECATED: removal in 2027
-echo "${GITHUB_REF_NAME};${image_name}" > /opt/photonvision/image-version
-
 cp -f ./image-version.json /opt/photonvision/image-version.json
