@@ -93,13 +93,13 @@ help() {
 					Options: "yes", "no".
 					Default: "yes" (unless -q or --quiet is specified, then "no").
 			-m [option], --install-nm=[option]
-					DEPRECATED: use `-c`, `--control-networking` instead.
+					DEPRECATED: use '-c', '--control-networking' instead.
 					Configures PhotonVision to control networking and will install
 					NetworkManager if needed. This will only work on Debian-based Linux systems.
 					Options: "yes", "no".
 					Default: "yes" (unless -q or --quiet is specified, then "no").
 			-n, --no-networking
-					DEPRECATED: use `-c`, `--control-networking` instead.
+					DEPRECATED: use '-c', '--control-networking' instead.
 					Configures PhotonVision to not control networking.
 			-q, --quiet
 					Silent install, automatically accepts all defaults. For
