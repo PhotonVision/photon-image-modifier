@@ -29,25 +29,10 @@ package_is_installed(){
     dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q "ok installed"
 }
 
-install_if_missing() {
-  if package_is_installed "$1" ; then
-    debug "Found existing $1. Skipping..."
-    # Always mark our upstream apt deps as held back, which will prevent the package
-    # from being automatically installed, upgraded or removed
-    if [[ -z $TEST ]]; then
-      apt-mark manual "$1"
-    fi
-    return
-  fi
-
-  debug "Installing $1..."
-  if [[ -z $TEST ]]; then
-    apt-get --yes install "$1"
-    # Always mark our upstream apt deps as held back, which will prevent the package
-    # from being automatically installed, upgraded or removed
-    apt-mark manual "$1"
-  fi
-  debug "$1 installation complete."
+install_manual() {
+  debug "Installing $@..."
+  apt-get $APT_OPT --yes install "$@"
+  debug "Installation complete."
 }
 
 get_versions() {
@@ -200,8 +185,19 @@ done
 debug "This is the installation script for PhotonVision."
 
 # if quiet and control_networking wasn't set, then assume "no"
-if [[ -n "$QUIET" && "$CONTROL_NETWORKING" == "ask" ]]; then
+if [[ -n $QUIET && "$CONTROL_NETWORKING" == "ask" ]]; then
   CONTROL_NETWORKING="no"
+fi
+
+APT_OPT=""
+
+if [[ -n $TEST ]]; then
+  debug "This script is running in test mode, no changes will be made to the system"
+  APT_OPT="--dry-run"
+fi
+
+if [[ -n $QUIET ]]; then
+  APT_OPT="$APT_OPT --quiet"
 fi
 
 if [[ "$(id -u)" != "0" && -z $TEST ]]; then
@@ -240,31 +236,6 @@ esac
 
 debug "Installing for platform $ARCH"
 
-# select the right version of the PhotonVision release URL
-if [ "$PV_VERSION" = "latest" ] ; then
-  RELEASE_URL="https://api.github.com/repos/photonvision/photonvision/releases/latest"
-else
-  RELEASE_URL="https://api.github.com/repos/photonvision/photonvision/releases/tags/$PV_VERSION"
-fi
-
-# use GITHUB TOKEN when available to authenticate
-if [[ -n $GH_TOKEN ]]; then
-  RELEASES=$(curl -s -H "Authorization: Bearer $GH_TOKEN" "$RELEASE_URL")
-else
-  RELEASES=$(curl -sk "$RELEASE_URL")
-fi
-
-DOWNLOAD_URL=$(echo "$RELEASES" |
-                  grep "browser_download_url.*${ARCH_NAME}\.jar" |
-                  cut -d : -f 2,3 |
-                  tr -d '"'
-              )
-
-if [[ -z $DOWNLOAD_URL ]] ; then
-  die "PhotonVision '$PV_VERSION' is not available for $ARCH_NAME!" \
-      "Use ./install --list-versions to get a list of available versions."
-fi
-
 if [ -f /etc/os-release ]; then
     # Sourcing the file makes variables like $ID and $ID_LIKE available
     . /etc/os-release
@@ -301,13 +272,34 @@ if [[ -z $TEST ]]; then
 fi
 debug "Updated package list."
 
-install_if_missing curl
-install_if_missing avahi-daemon
-install_if_missing libatomic1
-install_if_missing v4l-utils
-install_if_missing sqlite3
-install_if_missing openjdk-25-jre-headless
-install_if_missing usbtop
+install_manual curl
+
+# select the right version of the PhotonVision release URL
+if [ "$PV_VERSION" = "latest" ] ; then
+  RELEASE_URL="https://api.github.com/repos/photonvision/photonvision/releases/latest"
+else
+  RELEASE_URL="https://api.github.com/repos/photonvision/photonvision/releases/tags/$PV_VERSION"
+fi
+
+# use GITHUB TOKEN when available to authenticate
+if [[ -n $GH_TOKEN ]]; then
+  RELEASES=$(curl -s -H "Authorization: Bearer $GH_TOKEN" "$RELEASE_URL")
+else
+  RELEASES=$(curl -sk "$RELEASE_URL")
+fi
+
+DOWNLOAD_URL=$(echo "$RELEASES" |
+                  grep "browser_download_url.*${ARCH_NAME}\.jar" |
+                  cut -d : -f 2,3 |
+                  tr -d '"'
+              )
+
+if [[ -z $DOWNLOAD_URL ]] ; then
+  die "PhotonVision '$PV_VERSION' is not available for $ARCH_NAME!" \
+      "Use ./install --list-versions to get a list of available versions."
+fi
+
+install_manual avahi-daemon libatomic1 v4l-utils sqlite3 openjdk-25-jre-headless usbtop
 
 debug "Adding cpu governor service"
 if [[ -z $TEST ]]; then
@@ -328,8 +320,7 @@ fi
 
 if [[ "$CONTROL_NETWORKING" == "yes" ]]; then
   debug "NetworkManager installation requested. Installing components..."
-  install_if_missing network-manager
-  install_if_missing net-tools
+  install_manual network-manager net-tools
 
   debug "Configuring..."
   if [[ -z $TEST ]]; then
