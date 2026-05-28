@@ -88,7 +88,7 @@ Syntax: sudo ./install.sh [options]
       Configures PhotonVision to not control networking.
   -q, --quiet
       Silent install, automatically accepts all defaults. For
-      non-interactive use. Makes -m,--install-nm default to "no".
+      non-interactive use. Makes -c, --control-networking default to "no".
   -t, --test
       Run in test mode. All actions that make chnages to the system
       are suppressed.
@@ -138,7 +138,7 @@ while getopts "hlva:cmnqt-:" OPT; do
       ;;
     m | install-nm)
       debug "-m, --install-nm is deprecated. Use '-c', or '--control-networking' instead."
-      ;&  # -m implies -c, so treat it as if -c was used
+      ;&  # -m implies -c, so treat it as if -c was used and fall through to the -c case
     c | control-networking)
       if [[ "$CONTROL_NETWORKING" == "ask" ]] ; then
         CONTROL_NETWORKING="$(echo "${OPTARG:-yes}" | tr '[:upper:]' '[:lower:]')"
