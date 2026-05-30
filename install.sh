@@ -36,7 +36,7 @@ install_manual() {
 }
 
 get_versions() {
-  PHOTON_VISION_RELEASES="$(wget -qO- https://api.github.com/repos/photonvision/photonvision/releases?per_page=$1)"
+  PHOTON_VISION_RELEASES="$(wget "$AUTH_TOKEN" -qO - https://api.github.com/repos/photonvision/photonvision/releases?per_page=$1)"
 
   PHOTON_VISION_VERSIONS=$(echo "$PHOTON_VISION_RELEASES" | \
     sed -En 's/\"tag_name\": \"(.+)\",/\1/p' | \
@@ -102,6 +102,12 @@ fi
 
 CONTROL_NETWORKING="ask"
 PV_VERSION="latest"
+
+# use GITHUB TOKEN when available to authenticate
+AUTH_TOKEN=""
+if [[ -n $GH_TOKEN ]]; then
+  AUTH_TOKEN="--header=\"Authorization: Bearer $GH_TOKEN\""
+fi
 
 while getopts "hlva:cmnqt-:" OPT; do
   RAWOPT="$OPT"
@@ -205,7 +211,7 @@ if [[ "$(id -u)" != "0" && -z $TEST ]]; then
 fi
 
 # Print an error message if apt isn't available
-command -v apt &> /dev/null || die "The 'apt' package manager is not available on this system!"
+command -v apt &> /dev/null || die "The 'apt' package manager is required for this installer, but was not founed on this system!"
 
 # Determine the system platform
 if [[ -z "$ARCH" ]]; then
@@ -266,14 +272,6 @@ else
   debug "PhotonVision will not control networking. You will have to configure it manually."
 fi
 
-debug "Updating package list..."
-if [[ -z $TEST ]]; then
-  apt-get -q update
-fi
-debug "Updated package list."
-
-install_manual curl
-
 # select the right version of the PhotonVision release URL
 if [ "$PV_VERSION" = "latest" ] ; then
   RELEASE_URL="https://api.github.com/repos/photonvision/photonvision/releases/latest"
@@ -281,12 +279,9 @@ else
   RELEASE_URL="https://api.github.com/repos/photonvision/photonvision/releases/tags/$PV_VERSION"
 fi
 
-# use GITHUB TOKEN when available to authenticate
-if [[ -n $GH_TOKEN ]]; then
-  RELEASES=$(curl -s -H "Authorization: Bearer $GH_TOKEN" "$RELEASE_URL")
-else
-  RELEASES=$(curl -sk "$RELEASE_URL")
-fi
+
+
+RELEASES=$(wget "$AUTH_TOKEN" -qO - "$RELEASE_URL")
 
 DOWNLOAD_URL=$(echo "$RELEASES" |
                   grep "browser_download_url.*${ARCH_NAME}\.jar" |
@@ -298,6 +293,12 @@ if [[ -z $DOWNLOAD_URL ]] ; then
   die "PhotonVision '$PV_VERSION' is not available for $ARCH_NAME!" \
       "Use ./install --list-versions to get a list of available versions."
 fi
+
+debug "Updating package list..."
+if [[ -z $TEST ]]; then
+  apt-get -q update
+fi
+debug "Updated package list."
 
 install_manual avahi-daemon libatomic1 v4l-utils sqlite3 openjdk-25-jre-headless usbtop
 
@@ -341,11 +342,7 @@ debug "Downloading PhotonVision '$PV_VERSION'..."
 if [[ -z $TEST ]]; then
   mkdir -p /opt/photonvision
   cd /opt/photonvision || die "Tried to enter /opt/photonvision, but it was not created."
-  curl -sk "$RELEASE_URL" |
-      grep "browser_download_url.*$ARCH_NAME.jar" |
-      cut -d : -f 2,3 |
-      tr -d '"' |
-      wget -qi - -O photonvision.jar
+  wget "$AUTH_TOKEN" -qO photonvision.jar "$DOWNLOAD_URL"
 fi
 debug "Downloaded PhotonVision."
 
