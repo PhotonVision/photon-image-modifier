@@ -36,7 +36,7 @@ install_manual() {
 }
 
 get_versions() {
-  PHOTON_VISION_RELEASES="$(wget "$AUTH_TOKEN" -qO - https://api.github.com/repos/photonvision/photonvision/releases?per_page=$1)"
+  PHOTON_VISION_RELEASES="$(wget $AUTH_TOKEN -qO - https://api.github.com/repos/photonvision/photonvision/releases?per_page=$1)"
 
   PHOTON_VISION_VERSIONS=$(echo "$PHOTON_VISION_RELEASES" | \
     sed -En 's/\"tag_name\": \"(.+)\",/\1/p' | \
@@ -279,14 +279,12 @@ else
   RELEASE_URL="https://api.github.com/repos/photonvision/photonvision/releases/tags/$PV_VERSION"
 fi
 
+# RELEASES=$(wget "$AUTH_TOKEN" -qO - "$RELEASE_URL")
 
-
-RELEASES=$(wget "$AUTH_TOKEN" -qO - "$RELEASE_URL")
-
-DOWNLOAD_URL=$(echo "$RELEASES" |
+DOWNLOAD_URL=$(wget $AUTH_TOKEN -qO - "$RELEASE_URL" |
                   grep "browser_download_url.*${ARCH_NAME}\.jar" |
                   cut -d : -f 2,3 |
-                  tr -d '"'
+                  tr -d '"[:space:]'
               )
 
 if [[ -z $DOWNLOAD_URL ]] ; then
@@ -342,7 +340,7 @@ debug "Downloading PhotonVision '$PV_VERSION'..."
 if [[ -z $TEST ]]; then
   mkdir -p /opt/photonvision
   cd /opt/photonvision || die "Tried to enter /opt/photonvision, but it was not created."
-  wget "$AUTH_TOKEN" -qO photonvision.jar "$DOWNLOAD_URL"
+  wget $AUTH_TOKEN -qO photonvision.jar "$DOWNLOAD_URL"
 fi
 debug "Downloaded PhotonVision."
 
