@@ -30,7 +30,7 @@ package_is_installed(){
 }
 
 install_manual() {
-  debug "Installing $@..."
+  debug "Installing $* ... "
   apt-get $APT_OPT --yes install "$@"
   debug "Installation complete."
 }
