@@ -5,7 +5,7 @@ set -e +u
 
 needs_arg() {
     if [ -z "$OPTARG" ]; then
-      die "Argument is required for --$OPT option" \
+      die "Argument is required for the '-$RAWOPT' option" \
           "See './install.sh -h' for more information."
     fi;
 }
