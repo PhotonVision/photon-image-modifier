@@ -104,9 +104,10 @@ CONTROL_NETWORKING="ask"
 PV_VERSION="latest"
 
 # use GITHUB TOKEN when available to authenticate
+# AUTH_TOKEN='--header="User-Agent: Mozilla/5.0 (Windows NT 6.0) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.97 Safari/537.11"' 
 AUTH_TOKEN=""
 if [[ -n $GH_TOKEN ]]; then
-  AUTH_TOKEN="--header='Authorization: Bearer $GH_TOKEN'"
+  AUTH_TOKEN=--header="Authorization: Bearer $GH_TOKEN"
 fi
 
 while getopts "hlva:cmnqt-:" OPT; do
@@ -280,7 +281,7 @@ else
   RELEASE_URL="https://api.github.com/repos/photonvision/photonvision/releases/tags/$PV_VERSION"
 fi
 
-DOWNLOAD_URL=$(wget $AUTH_TOKEN -qO - "$RELEASE_URL" |
+DOWNLOAD_URL=$(wget -d "$AUTH_TOKEN" -O - "$RELEASE_URL" |
                   grep "browser_download_url.*${ARCH_NAME}\.jar" |
                   cut -d : -f 2,3 |
                   tr -d '"[:space:]'
