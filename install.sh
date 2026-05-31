@@ -104,7 +104,6 @@ CONTROL_NETWORKING="ask"
 PV_VERSION="latest"
 
 # use GITHUB TOKEN when available to authenticate
-# AUTH_TOKEN='--header="User-Agent: Mozilla/5.0 (Windows NT 6.0) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.97 Safari/537.11"' 
 AUTH_TOKEN=""
 if [[ -n $GH_TOKEN ]]; then
   AUTH_TOKEN="Authorization: Bearer $GH_TOKEN"
