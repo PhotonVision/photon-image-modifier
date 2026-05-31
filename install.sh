@@ -20,7 +20,7 @@ die() {
 debug() {
   if [[ -z "$QUIET" || -n "$TEST" ]] ; then
     for arg in "$@"; do
-      echo "$QUIET$TEST $arg"
+      printf "%b\n" "$QUIET$TEST$arg"
     done
   fi
 }
@@ -29,7 +29,7 @@ package_is_installed(){
     dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q "ok installed"
 }
 
-install_manual() {
+install_required() {
   debug "Installing $* ... "
   apt-get $APT_OPT --yes install "$@"
   debug "Installation complete."
@@ -172,10 +172,10 @@ while getopts "hlva:cmnqt-:" OPT; do
       fi
       ;;
     q | quiet)
-      QUIET="[QUIET]"
+      QUIET="QUIET-"
       ;;
     t | test)
-      TEST="[TEST]"
+      TEST="TEST>"
       ;;
     \?)  # Handle invalid short options
       die "Error: Invalid option -$OPTARG" \
@@ -269,7 +269,8 @@ fi
 if [[ "$CONTROL_NETWORKING" == "yes" ]]; then
   debug "PhotonVision will install NetworkManager (if needed) and control networking on this device!"
 else
-  debug "PhotonVision will not control networking. You will have to configure it manually."
+  debug "PhotonVision will not control networking. You will have to configure the network manually."
+  USER_CONTROL="yes"
 fi
 
 # select the right version of the PhotonVision release URL
@@ -278,8 +279,6 @@ if [ "$PV_VERSION" = "latest" ] ; then
 else
   RELEASE_URL="https://api.github.com/repos/photonvision/photonvision/releases/tags/$PV_VERSION"
 fi
-
-# RELEASES=$(wget "$AUTH_TOKEN" -qO - "$RELEASE_URL")
 
 DOWNLOAD_URL=$(wget $AUTH_TOKEN -qO - "$RELEASE_URL" |
                   grep "browser_download_url.*${ARCH_NAME}\.jar" |
@@ -298,11 +297,11 @@ if [[ -z $TEST ]]; then
 fi
 debug "Updated package list."
 
-install_manual avahi-daemon libatomic1 v4l-utils sqlite3 openjdk-25-jre-headless usbtop
+install_required avahi-daemon libatomic1 v4l-utils sqlite3 openjdk-25-jre-headless usbtop
 
-debug "Adding cpu governor service"
-if [[ -z $TEST ]]; then
-  cat > /etc/systemd/system/cpu_governor.service << GOVERNOREOF
+debug "" "Adding cpu governor service"
+GOV_FILE="/etc/systemd/system/cpu_governor.service"
+GOV_SERVICE=$(cat << GOVERNOREOF
 [Unit]
 Description=Service that sets the cpu frequency governor
 
@@ -313,29 +312,35 @@ ExecStart=bash -c 'echo performance > /sys/devices/system/cpu/cpufreq/policy0/sc
 [Install]
 WantedBy=multi-user.target
 GOVERNOREOF
-  chmod 644 /etc/systemd/system/cpu_governor.service
+)
+debug "Writing:\n$GOV_SERVICE" "To: '$GOV_FILE'"
+if [[ -z $TEST ]]; then
+  printf "%s\n" "$GOV_SERVICE" > "$GOV_FILE"
+  chmod 644 "$GOV_FILE"
   systemctl enable cpu_governor.service
 fi
 
 if [[ "$CONTROL_NETWORKING" == "yes" ]]; then
-  debug "NetworkManager installation requested. Installing components..."
-  install_manual network-manager net-tools
+  NM_FILE="/etc/netplan/00-default-nm-renderer.yaml"
+  NM_CONFIG=$'network:\n  renderer: NetworkManager'
 
-  debug "Configuring..."
+  debug "NetworkManager installation requested. Installing components..."
+  install_required network-manager net-tools
+
+  debug "Configuring NetworkManager ..."
   if [[ -z $TEST ]]; then
     systemctl disable systemd-networkd-wait-online.service
-    if [[ -d /etc/netplan/ ]]; then
-      cat > /etc/netplan/00-default-nm-renderer.yaml << RENDEREREOF
-network:
-  renderer: NetworkManager
-RENDEREREOF
+  fi
+  if [[ -d /etc/netplan/ ]]; then
+    debug "Writing:\n$NM_CONFIG" "To: '$NM_FILE'"
+    if [[ -z $TEST ]]; then
+      printf "%s\n" "$NM_CONFIG" > "$NM_FILE"
     fi
   fi
   debug "NetworkManager configuration complete."
 fi
 
-debug ""
-debug "Downloading PhotonVision '$PV_VERSION'..."
+debug "" "Downloading PhotonVision '$PV_VERSION' from '$DOWNLOAD_URL'..."
 
 if [[ -z $TEST ]]; then
   mkdir -p /opt/photonvision
@@ -344,7 +349,41 @@ if [[ -z $TEST ]]; then
 fi
 debug "Downloaded PhotonVision."
 
-debug "Creating the PhotonVision systemd service..."
+CPUs="# AllowedCPUs=4-7"
+if grep -q "RK3588" /proc/cpuinfo; then
+  debug "This has a Rockchip RK3588, enabling big cores"
+  CPUs="AllowedCPUs=4-7"
+fi
+
+debug "Creating the PhotonVision systemd service ..."
+
+PV_FILE="/lib/systemd/system/photonvision.service"
+PV_SERVICE=$(cat << PVSERVICEEOF
+[Unit]
+Description=Service that runs PhotonVision
+# Uncomment the next line to have photonvision startup wait for NetworkManager startup
+${USER_CONTROL:+# }After=network.target
+
+[Service]
+WorkingDirectory=/opt/photonvision
+# Run photonvision at "nice" -10, which is higher priority than standard
+Nice=-10
+# for non-uniform CPUs, like big.LITTLE, you want to select the big cores
+# look up the right values for your CPU
+$CPUs
+
+ExecStart=/usr/bin/java -Xmx512m -jar /opt/photonvision/photonvision.jar ${USER_CONTROL:+-n}
+ExecStop=/bin/systemctl kill photonvision
+Type=simple
+Restart=on-failure
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
+PVSERVICEEOF
+)
+
+debug "Writing:\n$PV_SERVICE" "To: '$PV_FILE'"
 
 if [[ -z $TEST ]]; then
   if [[ $(systemctl --quiet is-active photonvision) == "active" ]]; then
@@ -357,44 +396,8 @@ if [[ -z $TEST ]]; then
     systemctl reset-failed
   fi
 
-  cat > /lib/systemd/system/photonvision.service << PVSERVICEEOF
-[Unit]
-Description=Service that runs PhotonVision
-# Uncomment the next line to have photonvision startup wait for NetworkManager startup
-# After=network.target
-
-[Service]
-WorkingDirectory=/opt/photonvision
-# Run photonvision at "nice" -10, which is higher priority than standard
-Nice=-10
-# for non-uniform CPUs, like big.LITTLE, you want to select the big cores
-# look up the right values for your CPU
-# AllowedCPUs=4-7
-
-ExecStart=/usr/bin/java -Xmx512m -jar /opt/photonvision/photonvision.jar
-ExecStop=/bin/systemctl kill photonvision
-Type=simple
-Restart=on-failure
-RestartSec=1
-
-[Install]
-WantedBy=multi-user.target
-PVSERVICEEOF
-
-  if [[ "$CONTROL_NETWORKING" != "yes" ]]; then
-    debug "Adding -n switch to photonvision startup to disable network management"
-    sed -i "s/photonvision.jar/photonvision.jar -n/" /lib/systemd/system/photonvision.service
-  else
-    debug "Setting photonvision.service to start after network.target is reached"
-    sed -i "s/# After=network.target/After=network.target/g" /lib/systemd/system/photonvision.service
-  fi
-
-  if grep -q "RK3588" /proc/cpuinfo; then
-    debug "This has a Rockchip RK3588, enabling big cores"
-    sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
-  fi
-
-  cp /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
+  printf "%s\n" "$PV_SERVICE" > "$PV_FILE"
+  cp "$PV_FILE" /etc/systemd/system/photonvision.service
   chmod 644 /etc/systemd/system/photonvision.service
   systemctl daemon-reload
   systemctl enable photonvision.service
