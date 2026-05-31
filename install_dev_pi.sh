@@ -17,7 +17,7 @@ EOF
 
 # Run normal photon installer
 chmod +x ./install.sh
-./install.sh --install-nm=yes --arch=aarch64
+./install.sh --control-networking=yes --arch=aarch64
 
 # and edit boot partition
 install -m 644 config.txt /boot/firmware
