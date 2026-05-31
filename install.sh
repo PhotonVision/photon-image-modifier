@@ -77,15 +77,6 @@ Syntax: sudo ./install.sh [options]
       NetworkManager if needed. This will only work on Debian-based Linux systems.
       Options: "yes", "no".
       Default: "yes" (unless -q or --quiet is specified, then "no").
-  -m [option], --install-nm=[option]
-      DEPRECATED: use '-c', '--control-networking' instead.
-      Configures PhotonVision to control networking and will install
-      NetworkManager if needed. This will only work on Debian-based Linux systems.
-      Options: "yes", "no".
-      Default: "yes" (unless -q or --quiet is specified, then "no").
-  -n, --no-networking
-      DEPRECATED: use '-c', '--control-networking' instead.
-      Configures PhotonVision to not control networking.
   -q, --quiet
       Silent install, automatically accepts all defaults. For
       non-interactive use. Makes -c, --control-networking default to "no".
@@ -94,6 +85,8 @@ Syntax: sudo ./install.sh [options]
       are suppressed.
 HELPEOF
 }
+
+debug "Running the installation script for PhotonVision."
 
 # Exit with message if attempting to run on SystemCore
 if grep -iq "systemcore" /etc/os-release; then
@@ -109,7 +102,7 @@ if [[ -n $GH_TOKEN ]]; then
   AUTH_TOKEN="Authorization: Bearer $GH_TOKEN"
 fi
 
-while getopts "hlva:cmnqt-:" OPT; do
+while getopts "hlva:cqt-:" OPT; do
   RAWOPT="$OPT"
   if [ "$OPT" = "-" ]; then
     RAWOPT="-$OPTARG"
@@ -142,9 +135,6 @@ while getopts "hlva:cmnqt-:" OPT; do
     a | arch) needs_arg;
       ARCH=$OPTARG
       ;;
-    m | install-nm)
-      debug "-m, --install-nm is deprecated. Use '-c', or '--control-networking' instead."
-      ;&  # -m implies -c, so treat it as if -c was used and fall through to the -c case
     c | control-networking)
       if [[ "$CONTROL_NETWORKING" == "ask" ]] ; then
         CONTROL_NETWORKING="$(echo "${OPTARG:-yes}" | tr '[:upper:]' '[:lower:]')"
@@ -163,14 +153,6 @@ while getopts "hlva:cmnqt-:" OPT; do
         die "--control-networking=$CONTROL_NETWORKING was already set. The option '-$RAWOPT' is redundant."
       fi
     ;;
-    n | no-networking)
-      debug "-n, --no-networking is deprecated. Use '-c no', or '--control-networking=no' instead."
-      if [[ "$CONTROL_NETWORKING" == "ask" ]] ; then
-        CONTROL_NETWORKING="no"
-      else
-        die "--control-networking=$CONTROL_NETWORKING was already set. The option '-$RAWOPT' is redundant."
-      fi
-      ;;
     q | quiet)
       QUIET="QUIET-"
       ;;
@@ -187,8 +169,6 @@ while getopts "hlva:cmnqt-:" OPT; do
       ;;
   esac
 done
-
-debug "This is the installation script for PhotonVision."
 
 # if quiet and control_networking wasn't set, then assume "no"
 if [[ -n $QUIET && "$CONTROL_NETWORKING" == "ask" ]]; then
