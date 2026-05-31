@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Exit on errors
-set -ex +u
+set -e +u
 
 needs_arg() {
     if [ -z "$OPTARG" ]; then
@@ -281,7 +281,7 @@ else
   RELEASE_URL="https://api.github.com/repos/photonvision/photonvision/releases/tags/$PV_VERSION"
 fi
 
-DOWNLOAD_URL=$(wget -d --header="$AUTH_TOKEN" -O - "$RELEASE_URL" |
+DOWNLOAD_URL=$(wget -q --header="$AUTH_TOKEN" -O - "$RELEASE_URL" |
                   grep "browser_download_url.*${ARCH_NAME}\.jar" |
                   cut -d : -f 2,3 |
                   tr -d '"[:space:]'
@@ -346,7 +346,7 @@ debug "" "Downloading PhotonVision '$PV_VERSION' from '$DOWNLOAD_URL'..."
 if [[ -z $TEST ]]; then
   mkdir -p /opt/photonvision
   cd /opt/photonvision || die "Tried to enter /opt/photonvision, but it was not created."
-  wget -d --header="$AUTH_TOKEN" -O photonvision.jar "$DOWNLOAD_URL"
+  wget -q --header="$AUTH_TOKEN" -O photonvision.jar "$DOWNLOAD_URL"
 fi
 debug "Downloaded PhotonVision."
 
