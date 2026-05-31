@@ -280,7 +280,7 @@ else
   RELEASE_URL="https://api.github.com/repos/photonvision/photonvision/releases/tags/$PV_VERSION"
 fi
 
-DOWNLOAD_URL=$(wget $AUTH_TOKEN -qO - "$RELEASE_URL" |
+DOWNLOAD_URL=$(wget ${AUTH_TOKEN} -qO - "$RELEASE_URL" |
                   grep "browser_download_url.*${ARCH_NAME}\.jar" |
                   cut -d : -f 2,3 |
                   tr -d '"[:space:]'
