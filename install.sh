@@ -301,7 +301,7 @@ if [[ -z $TEST ]]; then
 fi
 
 if [[ "$CONTROL_NETWORKING" == "yes" ]]; then
-  NM_FILE="/etc/netplan/00-default-nm-renderer.yaml"
+  NM_FILE="/etc/netplan/50-default-nm-renderer.yaml"
   NM_CONFIG=$'network:\n  renderer: NetworkManager'
 
   debug "NetworkManager installation requested. Installing components..."
@@ -315,6 +315,7 @@ if [[ "$CONTROL_NETWORKING" == "yes" ]]; then
     debug "Writing:\n$NM_CONFIG" "To: '$NM_FILE'"
     if [[ -z $TEST ]]; then
       printf "%s\n" "$NM_CONFIG" > "$NM_FILE"
+      chmod 600 "$NM_FILE"
     fi
   fi
   debug "NetworkManager configuration complete."
