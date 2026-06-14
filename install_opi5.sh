@@ -52,7 +52,7 @@ echo "Installing additional things"
 apt-get --yes -qq install libc6 libstdc++6
 
 # let netplan create the config during cloud-init
-rm -f /etc/netplan/00-default-nm-renderer.yaml
+rm -f /etc/netplan/*-default-nm-renderer.yaml
 
 # set NetworkManager as the renderer in cloud-init
 cp -f ./OPi5_CIDATA/network-config /CIDATA/network-config
