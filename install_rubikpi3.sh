@@ -97,6 +97,7 @@ chmod +x /usr/sbin/update-grub
 apt-get -y install qcom-fastrpc1 linux-image-qcom=6.8.0-1077.81
 # Remove the old kernel
 apt-get -y purge linux-image-6.8.0-1055-qcom linux-modules-6.8.0-1055-qcom
+apt-get autoremove --yes
 
 # Remove the update-grub divert
 rm /usr/sbin/update-grub
@@ -183,10 +184,6 @@ rm -rf /var/lib/apt/lists/*
 df -h /dev/loop0
 
 apt-get clean
-df -h /dev/loop0
-
-# this should remove the old kernel
-apt-get autoremove --yes
 df -h /dev/loop0
 
 rm -rf /usr/share/doc
