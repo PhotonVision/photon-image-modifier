@@ -99,6 +99,7 @@ apt-get -y install qcom-fastrpc1 linux-image-6.8.0-1071-qcom
 apt-get -y purge linux-image-6.8.0-1055-qcom linux-modules-6.8.0-1055-qcom
 
 # Remove the update-grub divert
+rm /usr/sbin/update-grub
 dpkg-divert --local --rename --remove /usr/sbin/update-grub
 
 # Run update-grub with proper config
