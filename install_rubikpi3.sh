@@ -103,6 +103,9 @@ apt-get autoremove --yes
 rm /usr/sbin/update-grub
 dpkg-divert --local --rename --remove /usr/sbin/update-grub
 
+# Patch grub-mkconfig
+sed -i 's|GRUB_DEVICE="`${grub_probe} --target=device /`"|GRUB_DEVICE="${GRUB_DEVICE:-`${grub_probe} --target=device /`}"|' /usr/sbin/grub-mkconfig
+
 # Run update-grub with proper config
 GRUB_DEVICE=UUID=$(blkid -s UUID -o value ${rootdev}) update-grub
 
