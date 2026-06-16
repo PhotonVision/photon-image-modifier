@@ -101,6 +101,9 @@ apt-get -y purge linux-image-6.8.0-1055-qcom linux-modules-6.8.0-1055-qcom
 # Remove the update-grub divert
 dpkg-divert --local --rename --remove /usr/sbin/update-grub
 
+# Run update-grub with proper config
+GRUB_DEVICE=UUID=$(blkid -s UUID -o value ${rootdev}) update-grub
+
 # Download packages for installing NPU metrics daemon
 curl -fL --create-dirs --output-dir metrics-daemon/ -O "https://github.com/samfreund-qc/libqcnpuperf/releases/download/v1.0.1/{qcnpuperfd_1.0-1_arm64.deb,libqcnpuperf1_1.0-1_arm64.deb}"
 
