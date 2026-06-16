@@ -94,7 +94,7 @@ EOF
 chmod +x /usr/sbin/update-grub
 
 # qcom-fastrpc1 and linux-image-6.8.0-1071-qcom are for NPU metrics
-apt-get -y install qcom-fastrpc1 linux-image-6.8.0-1071-qcom
+apt-get -y install qcom-fastrpc1 linux-image-qcom=6.8.0-1077.81
 # Remove the old kernel
 apt-get -y purge linux-image-6.8.0-1055-qcom linux-modules-6.8.0-1055-qcom
 
