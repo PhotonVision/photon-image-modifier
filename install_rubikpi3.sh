@@ -84,9 +84,22 @@ apt-get clean
 
 df -h /dev/loop0
 
+# Divert grub update script
+dpkg-divert --local --rename --add /usr/sbin/update-grub
+cat > /usr/sbin/update-grub << 'EOF'
+#!/bin/sh
+echo "update-grub suppressed while we're in the chroot"
+exit 0
+EOF
+chmod +x /usr/sbin/update-grub
+
 # qcom-fastrpc1 and linux-image-6.8.0-1071-qcom are for NPU metrics
 apt-get -y install qcom-fastrpc1 linux-image-6.8.0-1071-qcom
+# Remove the old kernel
+apt-get -y purge linux-image-6.8.0-1055-qcom linux-modules-6.8.0-1055-qcom
 
+# Remove the update-grub divert
+dpkg-divert --local --rename --remove /usr/sbin/update-grub
 
 # Download packages for installing NPU metrics daemon
 curl -fL --create-dirs --output-dir metrics-daemon/ -O "https://github.com/samfreund-qc/libqcnpuperf/releases/download/v1.0.1/{qcnpuperfd_1.0-1_arm64.deb,libqcnpuperf1_1.0-1_arm64.deb}"
@@ -113,7 +126,6 @@ hostname: photonvision
 
 runcmd:
 - nmcli radio all off
-- update-grub
 - touch /etc/cloud/cloud-init.disabled
 EOFUSERDATA
 
