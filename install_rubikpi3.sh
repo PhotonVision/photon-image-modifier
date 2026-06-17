@@ -86,8 +86,6 @@ df -h /dev/loop0
 
 # qcom-fastrpc1 and linux-image-6.8.0-1071-qcom are for NPU metrics
 apt-get -y install qcom-fastrpc1 linux-image-6.8.0-1071-qcom
-# after upgrading the kernel, we need to update grub
-update-grub
 
 
 # Download packages for installing NPU metrics daemon
@@ -115,6 +113,7 @@ hostname: photonvision
 
 runcmd:
 - nmcli radio all off
+- update-grub
 - touch /etc/cloud/cloud-init.disabled
 EOFUSERDATA
 
