@@ -60,7 +60,6 @@ jobs:
             script: ./install_opi5.sh
             base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-rock-5c.img.xz
           - name: rubikpi3
-            cache: 'yes'
             script: ./install_rubikpi3.sh
             base_image: https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x01/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20250926-145.yaml
             root_location: "offset=569376768"
@@ -98,7 +97,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         minimum_free_mb: 2000
-        use_cache: ${{ matrix.cache || 'no' }}
+        use_cache: 'yes'
         image_url: ${{ matrix.base_image }}
         root_location: ${{ matrix.root_location || 'partition=2' }}
         shrink_image: ${{ matrix.shrink_image || 'yes' }}
