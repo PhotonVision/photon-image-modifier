@@ -85,7 +85,7 @@ apt-get clean
 df -h /dev/loop0
 
 # qcom-fastrpc1 and linux-image-6.8.0-1071-qcom are for NPU metrics
-apt-get -y install qcom-fastrpc1 linux-image-6.8.0-1071-qcom
+apt-get -y install qcom-fastrpc1 # linux-image-6.8.0-1071-qcom
 
 # Download packages for installing NPU metrics daemon
 curl -fL --create-dirs --output-dir metrics-daemon/ -O "https://github.com/samfreund-qc/libqcnpuperf/releases/download/v1.0.1/{qcnpuperfd_1.0-1_arm64.deb,libqcnpuperf1_1.0-1_arm64.deb}"
