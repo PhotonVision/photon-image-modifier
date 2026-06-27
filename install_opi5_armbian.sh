@@ -17,6 +17,9 @@ chmod +x ./install.sh
 echo "Installing additional things"
 apt-get --yes -qq install libc6 libstdc++6
 
+# this adds `strings` so that users can check the version of U-Boot with `sudo strings /dev/mtd0 | grep "^U-Boot"``
+apt-get --yes -qq install binutils
+
 # copy configuration directives for first boot
 cp -f ./armbian/.not_logged_in_yet /root/
 
