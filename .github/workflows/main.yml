@@ -103,6 +103,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         minimum_free_mb: 2000
+        use_cache: 'yes'
         image_url: ${{ matrix.base_image }}
         root_location: ${{ matrix.root_location || 'partition=2' }}
         shrink_image: ${{ matrix.shrink_image || 'yes' }}
