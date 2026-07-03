@@ -57,6 +57,7 @@ done
 # disable radios on first boot
 cat > /root/provisioning.sh << EOF
 #!/bin/bash
+hostnamectl set-hostname photonvision
 # disable radios on first boot
 echo "Running provisioning script" >> /root/provisioning.log
 nmcli radio all off
@@ -64,8 +65,7 @@ EOF
 chmod +x /root/provisioning.sh
 
 # set the hostname
-# echo "photonvision" > /etc/hostname
-hostnamectl set-hostname photonvision
+echo "photonvision" > /etc/hostname
 sed -i "s/127.0.1.1.*/127.0.1.1    photonvision/g" /etc/hosts
 
 rm -rf /var/lib/apt/lists/*
