@@ -35,7 +35,6 @@ sed -i s/verbosity=1/verbosity=7/g /boot/armbianEnv.txt
 sed -i s/extraargs=/#extraargs=/g /boot/armbianEnv.txt
 echo "extraargs=cma=256M initcall_debug ignore_loglevel" >> /boot/armbianEnv.txt
 
-
 # networkd isn't being used, this causes an unnecessary delay
 systemctl disable systemd-networkd-wait-online.service
 
@@ -60,18 +59,20 @@ cat > /root/provisioning.sh << EOF
 #!/bin/bash
 # disable radios on first boot
 echo "Running provisioning script" >> /root/provisioning.log
-# hostnamectl set-hostname photonvision
-# sed -i "s/127.0.1.1.*/127.0.1.1    photonvision/g" /etc/hosts
 nmcli radio all off
 EOF
 chmod +x /root/provisioning.sh
 
 # set the hostname
-echo "photonvision" > /etc/hostname
+# echo "photonvision" > /etc/hostname
+hostnamectl set-hostname photonvision
 sed -i "s/127.0.1.1.*/127.0.1.1    photonvision/g" /etc/hosts
 
-# rm -rf /var/lib/apt/lists/*
-# apt-get --yes -qq clean
+rm -rf /var/lib/apt/lists/*
+apt-get --yes -qq clean
 
 # rm -rf /usr/share/doc
-# rm -rf /usr/share/locale/
+rm -rf /usr/share/locale/
+
+rm -rf /usr/lib/firmware/qcom
+
