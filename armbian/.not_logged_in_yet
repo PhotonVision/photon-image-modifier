@@ -1,10 +1,10 @@
 #/root/.not_logged_in_yet
 # Network Settings
-PRESET_NET_CHANGE_DEFAULTS="0"
-# ## Ethernet
-# PRESET_NET_ETHERNET_ENABLED="1"     #   Ignored due to WiFi
-# ## WiFi
-# PRESET_NET_WIFI_ENABLED="1"
+PRESET_NET_CHANGE_DEFAULTS="1"
+## Ethernet
+PRESET_NET_ETHERNET_ENABLED="1"     #   Ignored if WiFi is enabled
+## WiFi
+PRESET_NET_WIFI_ENABLED="0"
 # PRESET_NET_WIFI_SSID="MySSID"
 # PRESET_NET_WIFI_KEY="MyWiFiKEY"
 # PRESET_NET_WIFI_COUNTRYCODE="GB"

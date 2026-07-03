@@ -30,7 +30,7 @@ chmod 644 /etc/systemd/system/photonvision.service
 cat /etc/systemd/system/photonvision.service
 
 # diagnose slow boot on Armbian images
-sed -i s/verbosity=1/verbosity=4/g /boot/armbianEnv.txt
+sed -i s/verbosity=1/verbosity=7/g /boot/armbianEnv.txt
 
 sed -i s/extraargs=/#extraargs=/g /boot/armbianEnv.txt
 echo "extraargs=cma=256M initcall_debug ignore_loglevel" >> /boot/armbianEnv.txt
@@ -54,6 +54,14 @@ for btservice in $btservices; do
     echo "Masking: $btservice"
     systemctl mask "$btservice"
 done
+
+# disable radios on first boot
+cat > /root/provisioning.sh << EOF
+#!/bin/bash
+# disable radios on first boot
+nmcli radio all off
+EOF
+chmod +x /root/provisioning.sh
 
 # rm -rf /var/lib/apt/lists/*
 # apt-get --yes -qq clean
