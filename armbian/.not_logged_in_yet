@@ -2,7 +2,7 @@
 # Network Settings
 PRESET_NET_CHANGE_DEFAULTS="1"
 ## Ethernet
-PRESET_NET_ETHERNET_ENABLED="1"     #   Ignored if WiFi is enabled
+PRESET_NET_ETHERNET_ENABLED="0"     #   Ignored if WiFi is enabled
 ## WiFi
 PRESET_NET_WIFI_ENABLED="0"
 # PRESET_NET_WIFI_SSID="MySSID"
