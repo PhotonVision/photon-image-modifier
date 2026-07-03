@@ -33,7 +33,7 @@ cat /etc/systemd/system/photonvision.service
 sed -i s/verbosity=1/verbosity=4/g /boot/armbianEnv.txt
 
 sed -i s/extraargs=/#extraargs=/g /boot/armbianEnv.txt
-cat "extraargs=cma=256M initcall_debug ignore_loglevel" >> /boot/armbianEnv.txt
+echo "extraargs=cma=256M initcall_debug ignore_loglevel" >> /boot/armbianEnv.txt
 
 
 # networkd isn't being used, this causes an unnecessary delay
