@@ -37,7 +37,7 @@ echo "extraargs=cma=256M initcall_debug ignore_loglevel" >> /boot/armbianEnv.txt
 
 
 # networkd isn't being used, this causes an unnecessary delay
-# systemctl disable systemd-networkd-wait-online.service
+systemctl disable systemd-networkd-wait-online.service
 
 # PhotonVision server is managing the network, so it doesn't need to wait for online
 systemctl disable NetworkManager-wait-online.service
@@ -59,6 +59,7 @@ done
 cat > /root/provisioning.sh << EOF
 #!/bin/bash
 # disable radios on first boot
+echo "Running provisioning script" >> /root/provisioning.log
 nmcli radio all off
 EOF
 chmod +x /root/provisioning.sh
