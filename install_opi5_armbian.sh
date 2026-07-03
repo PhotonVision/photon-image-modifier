@@ -75,4 +75,3 @@ apt-get --yes -qq clean
 rm -rf /usr/share/locale/
 
 rm -rf /usr/lib/firmware/qcom
-
