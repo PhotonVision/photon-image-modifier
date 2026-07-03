@@ -208,7 +208,7 @@ case "$ARCH" in
     ARCH_NAME="linuxarm64"
     ;;
   x86_64)
-    ARCH_NAME="linuxx64"
+    ARCH_NAME="linuxx64|linuxx86-64"
     ;;
   armv71)
     die "ARM32 is not supported by PhotonVision. Exiting."
@@ -261,9 +261,7 @@ else
 fi
 
 DOWNLOAD_URL=$(wget -q --header="$AUTH_TOKEN" -O - "$RELEASE_URL" |
-                  grep "browser_download_url.*${ARCH_NAME}\.jar" |
-                  cut -d : -f 2,3 |
-                  tr -d '"[:space:]'
+                  grep -oP -m 1 "browser_download_url.*\Khttp.*(${ARCH_NAME})\.jar"
               )
 
 if [[ -z $DOWNLOAD_URL ]] ; then
