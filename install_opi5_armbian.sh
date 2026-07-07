@@ -31,9 +31,7 @@ cat /etc/systemd/system/photonvision.service
 
 # diagnose slow boot on Armbian images
 sed -i s/verbosity=1/verbosity=7/g /boot/armbianEnv.txt
-
-sed -i s/extraargs=/#extraargs=/g /boot/armbianEnv.txt
-echo "extraargs=cma=256M initcall_debug ignore_loglevel" >> /boot/armbianEnv.txt
+sed -i 's/extraargs=/&initcall_debug ignore_loglevel cryptomgr.notests=1 nokprobes initcall_blacklist=init_kprobe_trace,crypto_kdf108_init,init_blk_tracer trace_buf_size=1 /' /boot/armbianEnv.txt
 
 # networkd isn't being used, this causes an unnecessary delay
 # systemctl disable systemd-networkd-wait-online.service
