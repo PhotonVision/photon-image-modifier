@@ -8,6 +8,9 @@ echo '=== Current directory: $(pwd) ==='
 echo '=== Files in current directory: ==='
 ls -la
 
+echo "kernel version"
+uname -r
+
 # This fixes log spam from iris_vpu AKA msm_vidc
 # See: https://github.com/rubikpi-ai/linux-debian/blob/0f0155ba6d6057a6a86162597f48c24e1a54d1a1/ubuntu/qcom/video/vidc/inc/msm_vidc_debug.h#L101
 # and https://github.com/rubikpi-ai/linux-debian/blob/0f0155ba6d6057a6a86162597f48c24e1a54d1a1/ubuntu/qcom/video/vidc/src/msm_vidc_debug.c#L25
@@ -75,39 +78,7 @@ df -h /dev/loop0
 
 # Install packages from the RUBIK Pi PPA, we skip calling apt-get update here because install.sh already does that
 # libqnn1, libsnpe1, and qcom-adreno1 are for OD
-apt-get -y install libqnn1 libsnpe1 qcom-adreno1 device-tree-compiler
-
-# We do an apt clean in between installing packages as we don't have enough space otherwise
-df -h /dev/loop0
-
-apt-get clean
-
-df -h /dev/loop0
-
-# Divert grub update script
-dpkg-divert --local --rename --add /usr/sbin/update-grub
-cat > /usr/sbin/update-grub << 'EOF'
-#!/bin/sh
-echo "update-grub suppressed while we're in the chroot"
-exit 0
-EOF
-chmod +x /usr/sbin/update-grub
-
-# qcom-fastrpc1 and linux-image-6.8.0-1071-qcom are for NPU metrics
-apt-get -y install qcom-fastrpc1 linux-image-qcom=6.8.0-1077.81
-# Remove the old kernel
-apt-get -y purge linux-image-6.8.0-1055-qcom linux-modules-6.8.0-1055-qcom
-apt-get autoremove --yes
-
-# Remove the update-grub divert
-rm /usr/sbin/update-grub
-dpkg-divert --local --rename --remove /usr/sbin/update-grub
-
-# Patch grub-mkconfig
-sed -i 's|GRUB_DEVICE="`${grub_probe} --target=device /`"|GRUB_DEVICE="${GRUB_DEVICE:-`${grub_probe} --target=device /`}"|' /usr/sbin/grub-mkconfig
-
-# Run update-grub with proper config
-GRUB_DEVICE=UUID=$(blkid -s UUID -o value ${rootdev}) update-grub
+apt-get -y install libqnn1 libsnpe1 qcom-adreno1 device-tree-compiler qcom-fastrpc1
 
 # Download packages for installing NPU metrics daemon
 curl -fL --create-dirs --output-dir metrics-daemon/ -O "https://github.com/samfreund-qc/libqcnpuperf/releases/download/v1.0.1/{qcnpuperfd_1.0-1_arm64.deb,libqcnpuperf1_1.0-1_arm64.deb}"
