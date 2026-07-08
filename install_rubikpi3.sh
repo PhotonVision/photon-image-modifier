@@ -8,9 +8,6 @@ echo '=== Current directory: $(pwd) ==='
 echo '=== Files in current directory: ==='
 ls -la
 
-echo "kernel version"
-uname -r
-
 # This fixes log spam from iris_vpu AKA msm_vidc
 # See: https://github.com/rubikpi-ai/linux-debian/blob/0f0155ba6d6057a6a86162597f48c24e1a54d1a1/ubuntu/qcom/video/vidc/inc/msm_vidc_debug.h#L101
 # and https://github.com/rubikpi-ai/linux-debian/blob/0f0155ba6d6057a6a86162597f48c24e1a54d1a1/ubuntu/qcom/video/vidc/src/msm_vidc_debug.c#L25
@@ -69,15 +66,8 @@ df -h
 chmod +x ./install.sh
 ./install.sh --control-networking=yes --arch=aarch64 --version="$1"
 
-# We do an apt clean in between installing packages as we don't have enough space otherwise
-df -h /dev/loop0
-
-apt-get clean
-
-df -h /dev/loop0
-
 # Install packages from the RUBIK Pi PPA, we skip calling apt-get update here because install.sh already does that
-# libqnn1, libsnpe1, and qcom-adreno1 are for OD
+# libqnn1, libsnpe1, and qcom-adreno1 are for OD, qcom-fastrpc1 is for npu metrics
 apt-get -y install libqnn1 libsnpe1 qcom-adreno1 device-tree-compiler qcom-fastrpc1
 
 # Download packages for installing NPU metrics daemon
