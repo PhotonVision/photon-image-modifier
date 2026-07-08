@@ -74,7 +74,7 @@ jobs:
             script: ./install_opi5_armbian.sh
             base_image: https://armbian.hosthatch.com/archive/orangepi5/archive/Armbian_26.2.1_Orangepi5_trixie_vendor_6.1.115_minimal.img.xz
             root_location: "partition=1"
-            shrink_image: "no"
+            shrink_image: 'yes'
 
     name: "Build for ${{ matrix.name }}"
 
