@@ -33,4 +33,4 @@ echo "Banner /etc/issue.net" > /etc/ssh/sshd_config.d/90_PhotonVisionBanner.conf
 # Add photon version file
 mkdir -p /opt/photonvision/
 
-cp -f ./image-version.json /opt/photonvision/image-version.json
+cp -f ./image-metadata.json /opt/photonvision/image-metadata.json

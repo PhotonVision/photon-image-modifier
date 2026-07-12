@@ -99,7 +99,7 @@ jobs:
 
         echo "$json_string"
 
-        echo "$json_string" > image-version.json
+        echo "$json_string" > image-metadata.json
 
     - name: Install dependencies and build image
       uses: photonvision/photon-image-runner@v2.0.0
