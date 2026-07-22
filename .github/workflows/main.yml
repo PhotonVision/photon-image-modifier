@@ -44,25 +44,36 @@ jobs:
           - name: opi5
             script: ./install_opi5.sh
             base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5.img.xz
+            use_cache: 'no'
           - name: opi5b
             script: ./install_opi5.sh
             base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5b.img.xz
+            use_cache: 'no'
           - name: opi5plus
             script: ./install_opi5.sh
             base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5-plus.img.xz
+            use_cache: 'no'
           - name: opi5pro
             script: ./install_opi5.sh
             base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5-pro.img.xz
+            use_cache: 'no'
           - name: opi5max
             script: ./install_opi5.sh
             base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-orangepi-5-max.img.xz
+            use_cache: 'no'
           - name: rock5c
             script: ./install_opi5.sh
             base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-rock-5c.img.xz
+            use_cache: 'no'
           - name: rubikpi3
             script: ./install_rubikpi3.sh
-            base_image: https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x01/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20250926-145.yaml
+            base_image: https://people.canonical.com/~platform/images/qualcomm-iot/rubikpi3/ubuntu-server-24.04/x03/ubuntu-24.04-preinstalled-server-arm64+rubikpi3-20260305-527.yaml
             root_location: "offset=569376768"
+            shrink_image: "no"
+          - name: opi5_armbian
+            script: ./install_opi5_armbian.sh
+            base_image: https://armbian.hosthatch.com/archive/orangepi5/archive/Armbian_26.2.1_Orangepi5_trixie_vendor_6.1.115_minimal.img.xz
+            root_location: "partition=1"
             shrink_image: "no"
 
     name: "Build for ${{ matrix.name }}"
@@ -91,15 +102,15 @@ jobs:
         echo "$json_string" > image-version.json
 
     - name: Install dependencies and build image
-      uses: photonvision/photon-image-runner@v1.3.0
+      uses: photonvision/photon-image-runner@v2.0.0
       id: install_deps
       env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         minimum_free_mb: 2000
+        use_cache: ${{ matrix.use_cache || 'yes' }}
         image_url: ${{ matrix.base_image }}
         root_location: ${{ matrix.root_location || 'partition=2' }}
-        boot_partition:
         shrink_image: ${{ matrix.shrink_image || 'yes' }}
         commands: |
             set -e

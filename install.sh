@@ -208,7 +208,7 @@ case "$ARCH" in
     ARCH_NAME="linuxarm64"
     ;;
   x86_64)
-    ARCH_NAME="linuxx64"
+    ARCH_NAME="linuxx64|linuxx86-64"
     ;;
   armv71)
     die "ARM32 is not supported by PhotonVision. Exiting."
@@ -261,9 +261,7 @@ else
 fi
 
 DOWNLOAD_URL=$(wget -q --header="$AUTH_TOKEN" -O - "$RELEASE_URL" |
-                  grep "browser_download_url.*${ARCH_NAME}\.jar" |
-                  cut -d : -f 2,3 |
-                  tr -d '"[:space:]'
+                  grep -oP -m 1 "browser_download_url.*\Khttp.*(${ARCH_NAME})\.jar"
               )
 
 if [[ -z $DOWNLOAD_URL ]] ; then
@@ -301,7 +299,7 @@ if [[ -z $TEST ]]; then
 fi
 
 if [[ "$CONTROL_NETWORKING" == "yes" ]]; then
-  NM_FILE="/etc/netplan/00-default-nm-renderer.yaml"
+  NM_FILE="/etc/netplan/50-default-nm-renderer.yaml"
   NM_CONFIG=$'network:\n  renderer: NetworkManager'
 
   debug "NetworkManager installation requested. Installing components..."
@@ -315,6 +313,7 @@ if [[ "$CONTROL_NETWORKING" == "yes" ]]; then
     debug "Writing:\n$NM_CONFIG" "To: '$NM_FILE'"
     if [[ -z $TEST ]]; then
       printf "%s\n" "$NM_CONFIG" > "$NM_FILE"
+      chmod 600 "$NM_FILE"
     fi
   fi
   debug "NetworkManager configuration complete."

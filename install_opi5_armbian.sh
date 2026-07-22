@@ -3,46 +3,12 @@
 # Exit on errors, print commands, ignore unset variables
 set -ex +u
 
-# mount partition 1 as /CIDATA
-mkdir --parent /CIDATA
-mount "${loopdev}p1" /CIDATA
-ls -la /CIDATA
-
 # silence log spam from dpkg
 cat > /etc/apt/apt.conf.d/99dpkg.conf << EOF
 Dpkg::Progress-Fancy "0";
 APT::Color "0";
 Dpkg::Use-Pty "0";
 EOF
-
-apt-get -q update
-
-before=$(df --output=used / | tail -n1)
-# clean up stuff
-
-# get rid of snaps
-echo "Purging snaps"
-rm -rf /var/lib/snapd/seed/snaps/*
-rm -f /var/lib/snapd/seed/seed.yaml
-apt-get --yes -q purge lxd-installer lxd-agent-loader
-apt-get --yes -q purge snapd
-
-# remove bluetooth daemon
-apt-get --yes -q purge bluez
-
-apt-get --yes -q autoremove
-
-# remove firmware that (probably) isn't needed
-rm -rf /usr/lib/firmware/mrvl
-rm -rf /usr/lib/firmware/mellanox
-rm -rf /usr/lib/firmware/qcom
-rm -rf /usr/lib/firmware/nvidia
-rm -rf /usr/lib/firmware/intel
-rm -rf /usr/lib/firmware/amdgpu
-
-after=$(df --output=used / | tail -n1)
-freed=$(( before - after ))
-echo "Freed up $freed KiB"
 
 # run Photonvision install script
 chmod +x ./install.sh
@@ -51,24 +17,21 @@ chmod +x ./install.sh
 echo "Installing additional things"
 apt-get --yes -qq install libc6 libstdc++6
 
-# let netplan create the config during cloud-init
-rm -f /etc/netplan/*-default-nm-renderer.yaml
+# this adds `strings` so that users can check the version of U-Boot with `sudo strings /dev/mtd0 | grep "^U-Boot"``
+apt-get --yes -qq install binutils
 
-# set NetworkManager as the renderer in cloud-init
-cp -f ./OPi5_CIDATA/network-config /CIDATA/network-config
-# add customized user-data file for cloud-init
-cp -f ./OPi5_CIDATA/user-data /CIDATA/user-data
-
-# configure GPIO line names
-dtc -@ -I dts -O dtb -o $(echo /usr/lib/firmware/*-rockchip)/device-tree/rockchip/overlay/rk3588-line-names.dtbo ./files/rk3588-line-names.dtso
-echo "U_BOOT_FDT_OVERLAYS=\"device-tree/rockchip/overlay/rk3588-line-names.dtbo\"" > /usr/share/u-boot-menu/conf.d/rk3588-line-names.conf
-u-boot-update
+# copy configuration directives for first boot
+cp -f ./armbian/.not_logged_in_yet /root/
 
 # modify photonvision.service to enable big cores
 sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
 cp -f /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
 chmod 644 /etc/systemd/system/photonvision.service
 cat /etc/systemd/system/photonvision.service
+
+# diagnose slow boot on Armbian images
+sed -i s/verbosity=1/verbosity=7/g /boot/armbianEnv.txt
+sed -i 's/extraargs=/&initcall_debug ignore_loglevel cryptomgr.notests=1 nokprobes initcall_blacklist=init_kprobe_trace,crypto_kdf108_init,init_blk_tracer trace_buf_size=1 /' /boot/armbianEnv.txt
 
 # networkd isn't being used, this causes an unnecessary delay
 # systemctl disable systemd-networkd-wait-online.service
@@ -89,10 +52,24 @@ for btservice in $btservices; do
     systemctl mask "$btservice"
 done
 
+# disable radios on first boot
+cat > /root/provisioning.sh << EOF
+#!/bin/bash
+hostnamectl set-hostname photonvision
+# disable radios on first boot
+echo "Running provisioning script" >> /root/provisioning.log
+nmcli radio all off
+EOF
+chmod +x /root/provisioning.sh
+
+# set the hostname
+echo "photonvision" > /etc/hostname
+sed -i "s/127.0.1.1.*/127.0.1.1    photonvision/g" /etc/hosts
+
 rm -rf /var/lib/apt/lists/*
 apt-get --yes -qq clean
 
-rm -rf /usr/share/doc
+# rm -rf /usr/share/doc
 rm -rf /usr/share/locale/
 
-umount /CIDATA
+rm -rf /usr/lib/firmware/qcom
