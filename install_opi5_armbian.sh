@@ -21,7 +21,8 @@ apt-get --yes -qq install libc6 libstdc++6
 apt-get --yes -qq install binutils
 
 # copy configuration directives for first boot
-cp -f ./armbian/.not_logged_in_yet /root/
+# cp -f ./armbian/.not_logged_in_yet /root/
+rm -f /root/.not_logged_in_yet
 
 # modify photonvision.service to enable big cores
 sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
