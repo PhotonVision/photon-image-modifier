@@ -60,6 +60,8 @@ hostnamectl set-hostname photonvision
 # disable radios on first boot
 echo "Running provisioning script" >> /root/provisioning.log
 nmcli radio all off
+# turn off motd scripts
+chmod -x /etc/update-motd.d/*
 EOF
 chmod +x /root/provisioning.sh
 
