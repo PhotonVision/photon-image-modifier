@@ -66,6 +66,9 @@ chmod +x /root/provisioning.sh
 echo "photonvision" > /etc/hostname
 sed -i "s/127.0.1.1.*/127.0.1.1    photonvision/g" /etc/hosts
 
+# disable the Armbian motd sripts
+chmod -x /etc/update-motd.d/*
+
 rm -rf /var/lib/apt/lists/*
 apt-get --yes -qq clean
 
