@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Exit on errors, print commands, ignore unset variables
-set -e +u
+set -ex +u
 
 # silence log spam from dpkg
 cat > /etc/apt/apt.conf.d/99dpkg.conf << EOF
@@ -23,6 +23,7 @@ apt-get --yes -qq install binutils
 # copy configuration directives for first boot
 # cp -f ./armbian/.not_logged_in_yet /root/
 rm -f /root/.not_logged_in_yet
+touch /root/.not_logged_in_yet
 
 # modify photonvision.service to enable big cores
 sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
