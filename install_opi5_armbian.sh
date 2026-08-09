@@ -36,33 +36,25 @@ sed -i 's/extraargs=/&initcall_debug ignore_loglevel cryptomgr.notests=1 nokprob
 # PhotonVision server is managing the network, so it doesn't need to wait for online
 systemctl disable NetworkManager-wait-online.service
 
-# the bluetooth service isn't needed and causes problems with cloud-init
-# the chip has different names on different boards. Examples are:
-#   OrangePi5: ap6275p-bluetooth.service
-#   OrangePi5pro: ap6256s-bluetooth.service
-#   OrangePi5b: ap6275p-bluetooth.service
-#   OrangePi5max: ap6611s-bluetooth.service
-# instead of keeping a catalog of these services, find them based on a pattern and mask them
-btservices=$(systemctl list-unit-files *bluetooth.service | tail -n +2 | head -n -1 | awk '{print $1}')
-for btservice in $btservices; do
-    echo "Masking: $btservice"
-    systemctl mask "$btservice"
-done
-
-# disable radios on first boot
-cat > /root/provisioning.sh << EOF
-#!/bin/bash
-# redirect stdout and stderr to a log file
-exec > /root/provisioning.log 2>&1
-echo "Running provisioning script"
-hostnamectl set-hostname photonvision
-# disable radios on first boot
-nmcli radio all off
-# turn off motd scripts
-chmod -x /etc/update-motd.d/*
-echo "Provisioning complete"
+# disable wireless by blacklisting broadcom drivers
+cat > /etc/modprobe.d/disable-wireless.conf << EOF
+# Disable wireless drivers to prevent them from loading
+blacklist brcmfmac
+blacklist brcmutil
+blacklist rtw88_core
+blacklist rtw88_pci
+blacklist rtw89_core
+blacklist rtw89_pci
 EOF
-chmod +x /root/provisioning.sh
+
+# mask the bluetooth and wpa services to preven them from being started
+systemctl mask bluetooth.service
+systemctl mask wpa_supplicant.service
+
+# disable NetworkManager from managing wireless interfaces
+mkdir -p /etc/NetworkManager/conf.d
+echo -e "[keyfile]\nunmanaged-devices=interface-name:wlan*" > /etc/NetworkManager/conf.d/disable-wifi.conf
+
 
 # set the hostname
 echo "photonvision" > /etc/hostname
