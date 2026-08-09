@@ -20,6 +20,9 @@ apt-get --yes -qq install libc6 libstdc++6
 # this adds `strings` so that users can check the version of U-Boot with `sudo strings /dev/mtd0 | grep "^U-Boot"``
 apt-get --yes -qq install binutils
 
+# this isn't required, but is useful for monitoring temperature from the command line
+apt-get --yes -qq install  lm-sensors
+
 # modify photonvision.service to enable big cores
 sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
 cp -f /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
@@ -69,7 +72,7 @@ rm -f /root/.not_logged_in_yet
 sudo rm -f /usr/lib/armbian/armbian-firstlogin
 
 # Create a blank, dummy script in its place to prevent "file not found" profile errors
-printf '#!/bin/bash\necho "First login script disabled"\nexit 0' > /usr/lib/armbian/armbian-firstlogin
+printf '#!/bin/bash\necho "First login script disabled"\nexit 0\n' > /usr/lib/armbian/armbian-firstlogin
 sudo chmod +x /usr/lib/armbian/armbian-firstlogin
 
 # disable the Armbian motd sripts
