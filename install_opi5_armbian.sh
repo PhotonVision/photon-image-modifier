@@ -21,9 +21,7 @@ apt-get --yes -qq install libc6 libstdc++6
 apt-get --yes -qq install binutils
 
 # copy configuration directives for first boot
-# cp -f ./armbian/.not_logged_in_yet /root/
-rm -f /root/.not_logged_in_yet
-touch /root/.not_logged_in_yet
+cp -f ./armbian/.not_logged_in_yet /root/
 
 # modify photonvision.service to enable big cores
 sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
@@ -32,7 +30,7 @@ chmod 644 /etc/systemd/system/photonvision.service
 cat /etc/systemd/system/photonvision.service
 
 # diagnose slow boot on Armbian images
-sed -i s/verbosity=1/verbosity=7/g /boot/armbianEnv.txt
+# sed -i s/verbosity=1/verbosity=7/g /boot/armbianEnv.txt
 sed -i 's/extraargs=/&initcall_debug ignore_loglevel cryptomgr.notests=1 nokprobes initcall_blacklist=init_kprobe_trace,crypto_kdf108_init,init_blk_tracer trace_buf_size=1 /' /boot/armbianEnv.txt
 
 # networkd isn't being used, this causes an unnecessary delay
@@ -57,12 +55,15 @@ done
 # disable radios on first boot
 cat > /root/provisioning.sh << EOF
 #!/bin/bash
+# redirect stdout and stderr to a log file
+exec > /root/provisioning.log 2>&1
+echo "Running provisioning script"
 hostnamectl set-hostname photonvision
 # disable radios on first boot
-echo "Running provisioning script" >> /root/provisioning.log
 nmcli radio all off
 # turn off motd scripts
 chmod -x /etc/update-motd.d/*
+echo "Provisioning complete"
 EOF
 chmod +x /root/provisioning.sh
 
