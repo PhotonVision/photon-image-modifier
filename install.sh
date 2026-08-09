@@ -285,7 +285,7 @@ Description=Service that sets the cpu frequency governor
 
 [Service]
 Type=oneshot
-ExecStart=bash -c 'echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor'
+ExecStart=/bin/bash -c 'for policy in /sys/devices/system/cpu/cpufreq/policy*; do if [ -w "$policy/scaling_governor" ]; then echo performance > "$policy/scaling_governor"; fi; done'
 
 [Install]
 WantedBy=multi-user.target
