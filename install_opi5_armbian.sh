@@ -20,16 +20,13 @@ apt-get --yes -qq install libc6 libstdc++6
 # this adds `strings` so that users can check the version of U-Boot with `sudo strings /dev/mtd0 | grep "^U-Boot"``
 apt-get --yes -qq install binutils
 
-# copy configuration directives for first boot
-cp -f ./armbian/.not_logged_in_yet /root/
-
 # modify photonvision.service to enable big cores
 sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
 cp -f /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
 chmod 644 /etc/systemd/system/photonvision.service
 cat /etc/systemd/system/photonvision.service
 
-# diagnose slow boot on Armbian images
+# try to 'fix' slow boot on Armbian images
 # sed -i s/verbosity=1/verbosity=7/g /boot/armbianEnv.txt
 sed -i 's/extraargs=/&initcall_debug ignore_loglevel cryptomgr.notests=1 nokprobes initcall_blacklist=init_kprobe_trace,crypto_kdf108_init,init_blk_tracer trace_buf_size=1 /' /boot/armbianEnv.txt
 
@@ -71,9 +68,22 @@ chmod +x /root/provisioning.sh
 echo "photonvision" > /etc/hostname
 sed -i "s/127.0.1.1.*/127.0.1.1    photonvision/g" /etc/hosts
 
+# Prevent the firstlogin script from running when root logs in for the first time.
+# The script changes settings and overrides the photon user password.
+# Remove the sentinel file
+rm -f /root/.not_logged_in_yet
+
+# Erase the firstlogin script
+sudo rm -f /usr/lib/armbian/armbian-firstlogin
+
+# Create a blank, dummy script in its place to prevent "file not found" profile errors
+printf '#!/bin/bash\necho "First login script disabled"\nexit 0' > /usr/lib/armbian/armbian-firstlogin
+sudo chmod +x /usr/lib/armbian/armbian-firstlogin
+
 # disable the Armbian motd sripts
 chmod -x /etc/update-motd.d/*
 
+# Clean up apt cache and remove unnecessary files to reduce image size
 rm -rf /var/lib/apt/lists/*
 apt-get --yes -qq clean
 
