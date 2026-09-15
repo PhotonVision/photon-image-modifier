@@ -44,6 +44,7 @@ rm -rf /usr/lib/firmware/radeon
 echo "=== Space after pre-cleanup ==="
 df -h
 
+# START 26.04 UPGRADE HACK
 # Pre-configure grub to avoid interactive prompts in chroot
 debconf-set-selections <<< "grub-efi-arm64 grub-efi/install_devices multiselect"
 debconf-set-selections <<< "grub-efi-arm64 grub-efi/install_devices_empty boolean true"
@@ -86,6 +87,7 @@ for fw in qcom/qcs6490/cdsp.mbn qcom/qcs6490/Thundercomm/RubikPi3/adsp.mbn; do
     lsinitramfs /boot/initrd.img | grep -q "firmware/.*${fw}$" \
         || { echo "ERROR: ${fw} missing from initramfs" >&2; exit 1; }
 done
+# END 26.04 UPGRADE HACK
 
 echo "=== Space after upgrade ==="
 df -h
