@@ -279,7 +279,7 @@ install_required avahi-daemon libatomic1 v4l-utils sqlite3 openjdk-25-jre-headle
 
 debug "" "Adding cpu governor service"
 GOV_FILE="/etc/systemd/system/cpu_governor.service"
-GOV_SERVICE=$(cat << GOVERNOREOF
+GOV_SERVICE=$(cat << 'GOVERNOREOF'
 [Unit]
 Description=Service that sets the cpu frequency governor
 

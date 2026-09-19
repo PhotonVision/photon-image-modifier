@@ -189,7 +189,7 @@ EOFUDEV
 systemctl disable oem-tangshan-rubikpi3-thermal.service
 
 # 2. Create the fan helper script
-cat > /usr/local/sbin/rubik-fan-max.sh << EOF_MAX_FAN
+cat > /usr/local/sbin/rubik-fan-max.sh << 'EOF_MAX_FAN'
 #!/bin/sh
 hwmon_dir=$(readlink -f /sys/devices/platform/pwm-fan/hwmon/hwmon*)
 echo 0 > "$hwmon_dir/pwm1_enable"
