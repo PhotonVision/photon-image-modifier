@@ -34,33 +34,18 @@ cat /etc/systemd/system/photonvision.service
 sed -i 's/extraargs=/&initcall_debug ignore_loglevel cryptomgr.notests=1 nokprobes initcall_blacklist=init_kprobe_trace,crypto_kdf108_init,init_blk_tracer trace_buf_size=1 /' /boot/armbianEnv.txt
 
 # Vulkan for the Mali-G610, needed by PhotonVision's vkapriltag detector.
-# libmali on the vendor kbase driver, not Mesa PanVK on panthor: PanVK
-# benchmarked 13x slower, and slower even than the CPU detector. Numbers in
-# https://github.com/PhotonVision/photon-image-modifier/pull/161
-#
-# Easy to get wrong:
-#  - do NOT add the panthor-gpu overlay: mutually exclusive with kbase (builtin
-#    here, CONFIG_MALI_MIDGARD=y), and with panthor bound there is no /dev/mali0
-#  - g24p0, not g13p0: only g24p0 ships a Vulkan ICD
-#  - libvulkan1 is the loader, separate from libmali's ICD; mesa-vulkan-drivers
-#    is deliberately absent so its ICDs cannot be picked instead
-#  - curl is absent from the Armbian minimal image, and this runs before
-#    install_common.sh
+# The driver choice and the several non-obvious constraints around it are
+# explained in https://github.com/PhotonVision/photon-image-modifier/pull/161
 apt-get --yes -qq install libvulkan1 curl
 
 LIBMALI_DEB="libmali-valhall-g610-g24p0-gbm_1.9-1_arm64.deb"
 LIBMALI_URL="https://github.com/tsukumijima/libmali-rockchip/releases/download/v1.9-1-20260312-bd33ee2/${LIBMALI_DEB}"
 curl -fsSL -o "/tmp/${LIBMALI_DEB}" "${LIBMALI_URL}"
-# via apt, not dpkg -i, so dependencies resolve; the package also drops
-# /etc/ld.so.conf.d/00-aarch64-mali.conf, which is what puts
-# libMaliVulkan.so.1 on the loader path.
+# apt, not dpkg -i, so dependencies resolve
 apt-get --yes -qq install "/tmp/${LIBMALI_DEB}"
 rm -f "/tmp/${LIBMALI_DEB}"
 
-# Hold the GPU at its top OPP: the detector submits short bursts then blocks on
-# a fence, so simple_ondemand reads it as idle and sits near the floor. Worth
-# ~20% plus most of the frame-time variance. Wildcard because this one script
-# builds every RK3588 board; the other devfreq nodes are "dmc" and "<addr>.npu".
+# Pin the GPU to its top OPP - see the PR linked above.
 cat > /etc/udev/rules.d/99-mali-performance.rules <<'EOF'
 SUBSYSTEM=="devfreq", KERNEL=="*.gpu", ATTR{governor}="performance"
 EOF
