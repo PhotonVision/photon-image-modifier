@@ -33,6 +33,33 @@ cat /etc/systemd/system/photonvision.service
 # sed -i s/verbosity=1/verbosity=7/g /boot/armbianEnv.txt
 sed -i 's/extraargs=/&initcall_debug ignore_loglevel cryptomgr.notests=1 nokprobes initcall_blacklist=init_kprobe_trace,crypto_kdf108_init,init_blk_tracer trace_buf_size=1 /' /boot/armbianEnv.txt
 
+# Some (many) Orange Pi 5 boards contain a buggy version of U-Boot (2017.09-orangepi). One problem with this
+# version is that it generates a new MAC address on every boot. This is an attempt to fix that problem by
+# providing every board with a unique, static MAC address based on the CPU serial number. To support the OPi5 Plus
+# board, which has two ethernet ports, this service generates two addresses.
+# This code was created by Gemini and reviewed/tested by CRS.
+
+cp ./opi5/generate-unique-mac.sh /usr/local/bin/generate-unique-mac.sh
+chmod +x /usr/local/bin/generate-unique-mac.sh
+
+cat > /etc/systemd/system/mac-provisioner.service << 'EOFservice'
+[Unit]
+Description=Generate Unique Persistent MAC Address on First Boot via Netplan
+DefaultDependencies=no
+# After=local-fs.target
+Before=netplan-pre-apply.service network-pre.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/generate-unique-mac.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=basic.target
+EOFservice
+
+systemctl enable mac-provisioner.service
+
 # networkd isn't being used, this causes an unnecessary delay
 # systemctl disable systemd-networkd-wait-online.service
 
