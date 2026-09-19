@@ -148,7 +148,20 @@ chmod +x ./install.sh
 ./install.sh --control-networking=yes --arch=aarch64 --version="$1"
 
 # Install packages from the RUBIK Pi PPA, we skip calling apt-get update here because install.sh already does that
+# libqnn1, libsnpe1, and qcom-adreno1 are for OD
 apt-get -y install libqnn1 libsnpe1 qcom-adreno1 device-tree-compiler
+
+# Download packages for installing NPU metrics daemon
+mkdir metrics-daemon
+
+DEBPOOL=https://deb.debian.org/debian/pool/contrib
+
+curl --output-dir metrics-daemon -O "${DEBPOOL}/f/fastrpc/libfastrpc1_1.0.2-2_arm64.deb"
+curl --output-dir metrics-daemon -O "${DEBPOOL}/libq/libqcnpuperf/libqcnpuperf1_1.0.0-1_arm64.deb"
+curl -L --output-dir metrics-daemon -O "https://github.com/samfreund/qcnpuperfmon/releases/download/dev/qcnpuperfd_1.0.0-1_arm64.deb"
+
+dpkg -i --force-overwrite metrics-daemon/*.deb
+rm -rf metrics-daemon
 
 # Enable ssh
 systemctl enable ssh
