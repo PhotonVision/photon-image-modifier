@@ -33,6 +33,23 @@ cat /etc/systemd/system/photonvision.service
 # sed -i s/verbosity=1/verbosity=7/g /boot/armbianEnv.txt
 sed -i 's/extraargs=/&initcall_debug ignore_loglevel cryptomgr.notests=1 nokprobes initcall_blacklist=init_kprobe_trace,crypto_kdf108_init,init_blk_tracer trace_buf_size=1 /' /boot/armbianEnv.txt
 
+# Vulkan for the Mali-G610, needed by PhotonVision's vkapriltag detector.
+# The driver choice and the several non-obvious constraints around it are
+# explained in https://github.com/PhotonVision/photon-image-modifier/pull/161
+apt-get --yes -qq install libvulkan1 curl
+
+LIBMALI_DEB="libmali-valhall-g610-g24p0-gbm_1.9-1_arm64.deb"
+LIBMALI_URL="https://github.com/tsukumijima/libmali-rockchip/releases/download/v1.9-1-20260312-bd33ee2/${LIBMALI_DEB}"
+curl -fsSL -o "/tmp/${LIBMALI_DEB}" "${LIBMALI_URL}"
+# apt, not dpkg -i, so dependencies resolve
+apt-get --yes -qq install "/tmp/${LIBMALI_DEB}"
+rm -f "/tmp/${LIBMALI_DEB}"
+
+# Pin the GPU to its top OPP - see the PR linked above.
+cat > /etc/udev/rules.d/99-mali-performance.rules <<'EOF'
+SUBSYSTEM=="devfreq", KERNEL=="*.gpu", ATTR{governor}="performance"
+EOF
+
 # networkd isn't being used, this causes an unnecessary delay
 # systemctl disable systemd-networkd-wait-online.service
 
