@@ -45,37 +45,37 @@ jobs:
           # Orange Pi 5 and Rock-5C
           - name: opi5
             script: ./install_opi5_armbian.sh
-            base_image: https://github.com/PhotonVision/opi-image-generator/releases/download/v2027.0.0/Armbian-unofficial_26.5.2_Orangepi5_trixie_vendor_6.1.115_minimal.img.xz
+            base_image: https://github.com/PhotonVision/opi-image-generator/releases/download/v2027.0.1/Armbian-unofficial_26.8.8_Orangepi5_trixie_vendor_6.1.172_minimal.img.xz
             root_location: "partition=1"
             shrink_image: "no"
             use_cache: "no"
           - name: opi5b
             script: ./install_opi5_armbian.sh
-            base_image: https://github.com/PhotonVision/opi-image-generator/releases/download/v2027.0.0/Armbian-unofficial_26.5.2_Orangepi5b_trixie_vendor_6.1.115_minimal.img.xz
+            base_image: https://github.com/PhotonVision/opi-image-generator/releases/download/v2027.0.1/Armbian-unofficial_26.8.8_Orangepi5b_trixie_vendor_6.1.172_minimal.img.xz
             root_location: "partition=1"
             shrink_image: "no"
             use_cache: "no"
           - name: opi5plus
             script: ./install_opi5_armbian.sh
-            base_image: https://github.com/PhotonVision/opi-image-generator/releases/download/v2027.0.0/Armbian-unofficial_26.5.2_Orangepi5-plus_trixie_vendor_6.1.115_minimal.img.xz
+            base_image: https://github.com/PhotonVision/opi-image-generator/releases/download/v2027.0.1/Armbian-unofficial_26.8.8_Orangepi5-plus_trixie_vendor_6.1.172_minimal.img.xz
             root_location: "partition=1"
             shrink_image: "no"
             use_cache: "no"
           - name: opi5pro
             script: ./install_opi5_armbian.sh
-            base_image: https://github.com/PhotonVision/opi-image-generator/releases/download/v2027.0.0/Armbian-unofficial_26.5.2_Orangepi5pro_trixie_vendor_6.1.115_minimal.img.xz
+            base_image: https://github.com/PhotonVision/opi-image-generator/releases/download/v2027.0.1/Armbian-unofficial_26.8.8_Orangepi5pro_trixie_vendor_6.1.172_minimal.img.xz
             root_location: "partition=1"
             shrink_image: "no"
             use_cache: "no"
           - name: opi5max
             script: ./install_opi5_armbian.sh
-            base_image: https://github.com/PhotonVision/opi-image-generator/releases/download/v2027.0.0/Armbian-unofficial_26.5.2_Orangepi5-max_trixie_vendor_6.1.115_minimal.img.xz
+            base_image: https://github.com/PhotonVision/opi-image-generator/releases/download/v2027.0.1/Armbian-unofficial_26.8.8_Orangepi5-max_trixie_vendor_6.1.172_minimal.img.xz
             root_location: "partition=1"
             shrink_image: "no"
             use_cache: "no"
           - name: rock5c
             script: ./install_opi5_armbian.sh
-            base_image: https://github.com/PhotonVision/opi-image-generator/releases/download/v2027.0.0/Armbian-unofficial_26.5.2_Rock-5c_trixie_vendor_6.1.115_minimal.img.xz
+            base_image: https://github.com/PhotonVision/opi-image-generator/releases/download/v2027.0.1/Armbian-unofficial_26.8.8_Rock-5c_trixie_vendor_6.1.172_minimal.img.xz
             root_location: "partition=1"
             shrink_image: "no"
             use_cache: "no"
